@@ -4,16 +4,32 @@ import * as util from 'util';
 import outdent from 'outdent';
 
 const appendFile = util.promisify(fs.appendFile);
+const readFile = util.promisify(fs.readFile);
 @Injectable()
 export class PrismaDataModel {
   private static readonly datamodelPath = './prisma/datamodel.graphql';
-  constructor(@Inject('PrismaDatamodel') private readonly dataModel: Buffer) {}
+  constructor(@Inject('PrismaDatamodel') private dataModel: Buffer) {}
 
-  async addType(contentTypeName: string) {
-    const typeTemplate = outdent`\n
-    type ${contentTypeName} {
-      id: ID! @unique
-    }`;
-    appendFile(PrismaDataModel.datamodelPath, typeTemplate);
+  async addType(typeName: string) {
+    if (!this.typeExists(typeName)) {
+      const typeTemplate = outdent`\n
+      type ${typeName} {
+        id: ID! @unique
+      }`;
+      appendFile(PrismaDataModel.datamodelPath, typeTemplate);
+    } else {
+      throw new Error('Type already exists');
+    }
+    await this.reloadDatamodel();
+  }
+
+  private typeExists(typeName: string): boolean {
+    const indexOfType = this.dataModel.toString().indexOf(`type ${typeName} {`);
+    return indexOfType > -1 ? true : false;
+  }
+
+  private async reloadDatamodel() {
+    const fileContent = await readFile(PrismaDataModel.datamodelPath);
+    this.dataModel = fileContent;
   }
 }
