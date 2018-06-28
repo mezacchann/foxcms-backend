@@ -4,12 +4,12 @@ import { GraphQLModule, GraphQLFactory } from '@nestjs/graphql';
 import { UserModule } from './user/UserModule';
 import expressPlayground from 'graphql-playground-middleware-express';
 import { mergeSchemas } from 'graphql-tools';
-import { remoteSchema } from './remoteSchema.provider';
 import { GraphQLSchema } from 'graphql';
+import { ContentTypeModule } from './content-type/ContentTypeModule';
+import { PrismaModule } from './prisma/PrismaModule';
 
 @Module({
-  imports: [GraphQLModule, UserModule],
-  providers: [remoteSchema],
+  imports: [GraphQLModule, UserModule, ContentTypeModule, PrismaModule],
 })
 export class AppModule implements NestModule {
   constructor(
@@ -19,7 +19,7 @@ export class AppModule implements NestModule {
 
   configure(consumer: MiddlewareConsumer) {
     const typeDefs = this.graphQLFactory.mergeTypesByPaths(
-      './src/**/*.graphql',
+      '**/*.graphql',
     );
     const schema = this.graphQLFactory.createSchema({ typeDefs });
     const mergedSchema = mergeSchemas({ schemas: [schema, this.remoteSchema] });
