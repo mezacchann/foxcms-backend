@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import * as fs from 'fs';
 import * as util from 'util';
+import outdent from 'outdent';
 
 const appendFile = util.promisify(fs.appendFile);
 @Injectable()
@@ -9,11 +10,10 @@ export class PrismaDataModel {
   constructor(@Inject('PrismaDatamodel') private readonly dataModel: Buffer) {}
 
   async addType(contentTypeName: string) {
-    const typeTemplate = `
+    const typeTemplate = outdent`\n
     type ${contentTypeName} {
       id: ID! @unique
-    }
-        `;
+    }`;
     appendFile(PrismaDataModel.datamodelPath, typeTemplate);
   }
 }
