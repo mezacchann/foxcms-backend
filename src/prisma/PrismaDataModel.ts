@@ -14,7 +14,6 @@ export class PrismaDataModel {
       id: ID! @unique
     }
         `;
-
     appendFile(PrismaDataModel.datamodelPath, typeTemplate);
   }
 }
