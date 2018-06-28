@@ -1,0 +1,4 @@
+type User2 {
+    id: ID! @unique
+    name: String!
+}
