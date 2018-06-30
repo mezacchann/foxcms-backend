@@ -7,6 +7,7 @@ import { mergeSchemas } from 'graphql-tools';
 import { GraphQLSchema } from 'graphql';
 import { ContentTypeModule } from './content-type/ContentTypeModule';
 import { PrismaModule } from './prisma/PrismaModule';
+import { Prisma } from 'prisma-binding';
 
 @Module({
   imports: [GraphQLModule, UserModule, ContentTypeModule, PrismaModule],
@@ -18,15 +19,25 @@ export class AppModule implements NestModule {
   ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    const typeDefs = this.graphQLFactory.mergeTypesByPaths(
-      '**/*.graphql',
-    );
+    const typeDefs = this.graphQLFactory.mergeTypesByPaths('src/**/*.graphql');
     const schema = this.graphQLFactory.createSchema({ typeDefs });
     const mergedSchema = mergeSchemas({ schemas: [schema, this.remoteSchema] });
     consumer
       .apply(expressPlayground({ endpoint: '/graphql' }))
       .forRoutes('/playground')
-      .apply(graphqlExpress(req => ({ schema: mergedSchema, rootValue: req })))
+      .apply(
+        graphqlExpress(req => ({
+          schema: mergedSchema,
+          rootValue: req,
+          context: {
+            ...req,
+            prisma: new Prisma({
+              typeDefs: 'src/generatedPrismaSchema/prisma.graphql',
+              endpoint: 'http://localhost:4466',
+            }),
+          },
+        })),
+      )
       .forRoutes('/graphql');
   }
 }

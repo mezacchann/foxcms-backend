@@ -3,12 +3,18 @@ import { ContentTypeService } from './ContentTypeService';
 
 @Resolver('ContentType')
 export class ContentTypeResolver {
-    constructor(
-        private readonly contentTypeService: ContentTypeService,
-    ) {}
+  constructor(private readonly contentTypeService: ContentTypeService) {}
 
-    @Mutation()
-    addContentType(obj, { contentTypeName }, context, info) {
-        return this.contentTypeService.addContentType(contentTypeName);
-    }
+  @Mutation()
+  async addContentType(obj, { contentTypeName }, context, info) {
+    await this.contentTypeService.addContentType(contentTypeName);
+    return context.prisma.mutation.createContentType(
+      {
+        data: {
+          name: contentTypeName,
+        },
+      },
+      info,
+    );
+  }
 }
