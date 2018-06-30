@@ -38,10 +38,11 @@ export class PrismaDataModel {
   }
 
   private typeExists(typeName: string): boolean {
-    const indexOfType = this.contentTypeDataModel
+    const regex = new RegExp(`type.*${typeName}.*{`);
+    const result = this.contentTypeDataModel
       .toString()
-      .indexOf(`type ${typeName} {`);
-    return indexOfType > -1 ? true : false;
+      .match(regex);
+    return result !== null;
   }
 
   private async reloadDatamodel() {
