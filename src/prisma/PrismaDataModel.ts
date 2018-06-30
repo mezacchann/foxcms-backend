@@ -9,10 +9,10 @@ const readFile = util.promisify(fs.readFile);
 
 @Injectable()
 export class PrismaDataModel {
-  private static readonly contentTypeDataModel = './prisma/contentTypes.graphql';
+  private static readonly contentTypeDataModel =
+    './prisma/contentTypes.graphql';
   private readonly logger = new Logger(PrismaDataModel.name, true);
   constructor(
-    @Inject('PrismaDatamodel') private readonly dataModel: Buffer,
     @Inject('ContentTypesDatamodel') private contentTypeDataModel: Buffer,
   ) {}
 
@@ -38,7 +38,9 @@ export class PrismaDataModel {
   }
 
   private typeExists(typeName: string): boolean {
-    const indexOfType = this.contentTypeDataModel.toString().indexOf(`type ${typeName} {`);
+    const indexOfType = this.contentTypeDataModel
+      .toString()
+      .indexOf(`type ${typeName} {`);
     return indexOfType > -1 ? true : false;
   }
 
