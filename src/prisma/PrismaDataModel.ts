@@ -38,7 +38,7 @@ export class PrismaDataModel {
   }
 
   private typeExists(typeName: string): boolean {
-    const indexOfType = this.dataModel.toString().indexOf(`type ${typeName} {`);
+    const indexOfType = this.contentTypeDataModel.toString().indexOf(`type ${typeName} {`);
     return indexOfType > -1 ? true : false;
   }
 
