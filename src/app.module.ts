@@ -1,5 +1,5 @@
 import { Module, Inject, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { graphqlExpress } from 'apollo-server-express';
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { GraphQLModule, GraphQLFactory } from '@nestjs/graphql';
 import { UserModule } from './user/UserModule';
 import expressPlayground from 'graphql-playground-middleware-express';
@@ -23,8 +23,8 @@ export class AppModule implements NestModule {
     const schema = this.graphQLFactory.createSchema({ typeDefs });
     const mergedSchema = mergeSchemas({ schemas: [schema, this.remoteSchema] });
     consumer
-      .apply(expressPlayground({ endpoint: '/graphql' }))
-      .forRoutes('/playground')
+      .apply(graphiqlExpress({ endpointURL: '/graphql' }))
+      .forRoutes('/graphi')
       .apply(
         graphqlExpress(req => ({
           schema: mergedSchema,

@@ -1,5 +1,21 @@
 type ContentType {
-    id: ID! @unique
-    name: String!
+  id: ID! @unique
+  name: String!
+  fields: [ContentTypeField!]!
 }
-        
+
+enum ContentTypeFieldType {
+  String
+  Image
+  Int
+  Float
+  Boolean
+}
+
+type ContentTypeField {
+  id: ID! @unique
+  contentType: ContentType!
+  name: String!
+  type: ContentTypeFieldType!
+  isRequired: Boolean!
+}
