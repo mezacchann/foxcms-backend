@@ -9,8 +9,12 @@ const readFile = util.promisify(fs.readFile);
 
 @Injectable()
 export class PrismaDataModel {
-  private static readonly datamodelPath = './prisma/datamodel.graphql';
-  constructor(@Inject('PrismaDatamodel') private dataModel: Buffer, private readonly logger: Logger) {}
+  private static readonly contentTypeDataModel = './prisma/contentTypes.graphql';
+  private readonly logger = new Logger(PrismaDataModel.name, true);
+  constructor(
+    @Inject('PrismaDatamodel') private readonly dataModel: Buffer,
+    @Inject('ContentTypesDatamodel') private contentTypeDataModel: Buffer,
+  ) {}
 
   async addType(typeName: string) {
     if (this.typeExists(typeName)) throw new Error('Type already exists');
@@ -18,7 +22,8 @@ export class PrismaDataModel {
       await this.addTypeToDatamodel(typeName);
       await this.deploy();
       await this.reloadDatamodel();
-    } catch(err) {
+      this.logger.log(`Added and deployed new content type ${typeName}`);
+    } catch (err) {
       this.logger.error(err);
       throw new Error('Type cannot be added');
     }
@@ -29,7 +34,7 @@ export class PrismaDataModel {
     type ${typeName} {
       id: ID! @unique
     }`;
-    return appendFile(PrismaDataModel.datamodelPath, typeTemplate);
+    return appendFile(PrismaDataModel.contentTypeDataModel, typeTemplate);
   }
 
   private typeExists(typeName: string): boolean {
@@ -38,8 +43,8 @@ export class PrismaDataModel {
   }
 
   private async reloadDatamodel() {
-    const fileContent = await readFile(PrismaDataModel.datamodelPath);
-    this.dataModel = fileContent;
+    const fileContent = await readFile(PrismaDataModel.contentTypeDataModel);
+    this.contentTypeDataModel = fileContent;
   }
 
   private async deploy() {
