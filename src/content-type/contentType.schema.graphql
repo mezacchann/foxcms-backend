@@ -1,3 +1,9 @@
 type Mutation {
-  addContentType(contentTypeName: String): ContentType
+  addContentType(contentTypeName: String!): ContentType!
+  addContentTypeField(
+    contentTypeId: ID!
+    fieldName: String!
+    fieldType: ContentTypeFieldType
+    isRequired: Boolean
+  ): ContentTypeField!
 }

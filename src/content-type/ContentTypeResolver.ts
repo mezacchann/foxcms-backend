@@ -17,4 +17,30 @@ export class ContentTypeResolver {
       info,
     );
   }
+
+  @Mutation()
+  async addContentTypeField(obj, args, context, info) {
+    const { contentTypeId, fieldName, fieldType, isRequired } = args;
+    await this.contentTypeService.addContentTypeField(
+      contentTypeId,
+      fieldName,
+      fieldType,
+      isRequired,
+    );
+    return context.prisma.mutation.createContentTypeField(
+      {
+        data: {
+          contentType: {
+            connect: {
+              id: contentTypeId,
+            },
+          },
+          name: fieldName,
+          type: fieldType,
+          isRequired,
+        },
+      },
+      info,
+    );
+  }
 }

@@ -6,10 +6,11 @@ import outdent from 'outdent';
 
 const appendFile = util.promisify(fs.appendFile);
 const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
 
 @Injectable()
 export class PrismaDataModel {
-  private static readonly contentTypeDataModel =
+  private static readonly contentTypeDataModelPath =
     './prisma/contentTypes.graphql';
   private readonly logger = new Logger(PrismaDataModel.name, true);
   constructor(
@@ -17,10 +18,11 @@ export class PrismaDataModel {
   ) {}
 
   async addType(typeName: string) {
-    if (this.typeExists(typeName)) throw new Error('Type already exists');
+    if (this.typeExists(typeName))
+      throw new Error(`Type ${typeName} already exists`);
     try {
       await this.addTypeToDatamodel(typeName);
-      await this.deploy();
+      //await this.deploy();
       await this.reloadDatamodel();
       this.logger.log(`Added and deployed new content type ${typeName}`);
     } catch (err) {
@@ -29,24 +31,58 @@ export class PrismaDataModel {
     }
   }
 
+  async addField(
+    contentTypeName: string,
+    fieldName: string,
+    fieldType: any,
+    isRequired: boolean,
+  ) {
+    const indexOfDataType = this.contentTypeDataModel.indexOf(contentTypeName);
+    if (indexOfDataType === -1)
+      throw new Error(
+        `Cannot add Field. Type ${contentTypeName} doesn't exist`,
+      );
+    await this.addFieldToDatamodel(
+      contentTypeName,
+      fieldName,
+      fieldType,
+      isRequired,
+    );
+  }
+
   private async addTypeToDatamodel(typeName: string) {
     const typeTemplate = outdent`\n
     type ${typeName} {
       id: ID! @unique
     }`;
-    return appendFile(PrismaDataModel.contentTypeDataModel, typeTemplate);
+    return appendFile(PrismaDataModel.contentTypeDataModelPath, typeTemplate);
+  }
+
+  private async addFieldToDatamodel(
+    contentTypeName: string,
+    fieldName: string,
+    fieldType: any,
+    isRequired: boolean,
+  ) {
+    const fileContent = this.contentTypeDataModel.toString();
+    const idx =
+      fileContent.indexOf(`type ${contentTypeName} {`) +
+      `type ${contentTypeName} {`.length;
+    const result =
+      fileContent.slice(0, idx) +
+      `\n  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
+      fileContent.slice(idx);
+    writeFile(PrismaDataModel.contentTypeDataModelPath, result);
   }
 
   private typeExists(typeName: string): boolean {
     const regex = new RegExp(`type.*${typeName}.*{`);
-    const result = this.contentTypeDataModel
-      .toString()
-      .match(regex);
+    const result = this.contentTypeDataModel.toString().match(regex);
     return result !== null;
   }
 
   private async reloadDatamodel() {
-    const fileContent = await readFile(PrismaDataModel.contentTypeDataModel);
+    const fileContent = await readFile(PrismaDataModel.contentTypeDataModelPath);
     this.contentTypeDataModel = fileContent;
   }
 
