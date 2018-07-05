@@ -48,5 +48,13 @@ export class ContentTypeResolver {
   async removeContentType(obj, args, context, info) {
     const { contentTypeName } = args;
     this.contentTypeService.deleteContentType(contentTypeName);
+    return context.prisma.mutation.deleteContentType(
+      {
+        where: {
+          name: contentTypeName,
+        },
+      },
+      info,
+    );
   }
 }
