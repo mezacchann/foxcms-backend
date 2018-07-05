@@ -43,4 +43,10 @@ export class ContentTypeResolver {
       info,
     );
   }
+
+  @Mutation()
+  async removeContentType(obj, args, context, info) {
+    const { contentTypeName } = args;
+    this.contentTypeService.deleteContentType(contentTypeName);
+  }
 }

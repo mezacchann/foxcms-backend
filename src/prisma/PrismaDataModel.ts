@@ -22,7 +22,6 @@ export class PrismaDataModel {
       throw new Error(`Type ${typeName} already exists`);
     try {
       await this.addTypeToDatamodel(typeName);
-      //await this.deploy();
       await this.reloadDatamodel();
       this.logger.log(`Added and deployed new content type ${typeName}`);
     } catch (err) {
@@ -75,6 +74,12 @@ export class PrismaDataModel {
     writeFile(PrismaDataModel.contentTypeDataModelPath, result);
   }
 
+  async deleteType(contentTypeName: string) {
+    const fileContent = this.contentTypeDataModel.toString();
+    const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
+    writeFile(PrismaDataModel.contentTypeDataModelPath, fileContent.replace(regex, ''));
+  }
+
   private typeExists(typeName: string): boolean {
     const regex = new RegExp(`type.*${typeName}.*{`);
     const result = this.contentTypeDataModel.toString().match(regex);
@@ -86,7 +91,7 @@ export class PrismaDataModel {
     this.contentTypeDataModel = fileContent;
   }
 
-  private async deploy() {
+  async deploy() {
     return spawn('prisma', ['deploy', 'f']);
   }
 }

@@ -6,4 +6,5 @@ type Mutation {
     fieldType: ContentTypeFieldType
     isRequired: Boolean
   ): ContentTypeField!
+  removeContentType(contentTypeName: String!): ContentType
 }

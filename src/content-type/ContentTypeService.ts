@@ -24,4 +24,8 @@ export class ContentTypeService {
     const contentTypeName = queryResult.contentType.name;
     await this.prismaDataModel.addField(contentTypeName, fieldName, fieldType, isRequired);
   }
+
+  async deleteContentType(contentTypeName: string) {
+    this.prismaDataModel.deleteType(contentTypeName);
+  }
 }
