@@ -57,4 +57,18 @@ export class ContentTypeResolver {
       info,
     );
   }
+
+  @Mutation()
+  async removeContentTypeField(obj, args, context, info) {
+    const { fieldId } = args;
+    this.contentTypeService.deleteContentTypeField(fieldId);
+    return context.prisma.mutation.deleteContentTypeField(
+      {
+        where: {
+          id: fieldId,
+        },
+      },
+      info,
+    );
+  }
 }

@@ -13,7 +13,12 @@ export class ContentTypeService {
     await this.prismaDataModel.addType(contentTypeName);
   }
 
-  async addContentTypeField(contentTypeId: number, fieldName: string, fieldType: any, isRequired: boolean) {
+  async addContentTypeField(
+    contentTypeId: number,
+    fieldName: string,
+    fieldType: any,
+    isRequired: boolean,
+  ) {
     const query = `{
       contentType(where: {id: "${contentTypeId}"}) {
         name
@@ -22,10 +27,32 @@ export class ContentTypeService {
 
     const queryResult = await request('http://localhost:3000/graphql', query);
     const contentTypeName = queryResult.contentType.name;
-    await this.prismaDataModel.addField(contentTypeName, fieldName, fieldType, isRequired);
+    await this.prismaDataModel.addField(
+      contentTypeName,
+      fieldName,
+      fieldType,
+      isRequired,
+    );
   }
 
   async deleteContentType(contentTypeName: string) {
     this.prismaDataModel.deleteType(contentTypeName);
+  }
+
+  async deleteContentTypeField(fieldId: string) {
+    const query = `{
+      contentTypeFields(where: {id: "${fieldId}"}) {
+        name,
+        contentType {
+          name
+        }
+      }
+    }`;
+
+    const queryResult = await request('http://localhost:3000/graphql', query);
+    this.prismaDataModel.deleteContentTypeField(
+      queryResult.contentTypeFields[0].contentType.name,
+      queryResult.contentTypeFields[0].name,
+    );  
   }
 }
