@@ -1,4 +1,4 @@
-endpoint: http://localhost:4466
+endpoint: https://us1.prisma.sh/waldemar-penner-1ce42e/cms/dev
 datamodel: 
   - datamodel.graphql
   - contentTypes.graphql
