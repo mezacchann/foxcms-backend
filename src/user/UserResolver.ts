@@ -3,17 +3,15 @@ import { UserService } from './UserService';
 
 @Resolver('User')
 export class UserResolver {
-    constructor(
-        private readonly userService: UserService,
-    ) {}
+  constructor(private readonly userService: UserService) {}
 
-    @Query('user')
-    async getUser(obj, { id }, context, info) {
-        return await this.userService.find(Number(id));
-    }
+  @Query('user')
+  async getUser(obj, { id }, context, info) {
+    return await this.userService.find(Number(id));
+  }
 
-    @Mutation()
-    async createUser(_, { name }) {
-        return await this.userService.create(name);
-    }
+  @Mutation()
+  async createUser(_, { name }) {
+    return await this.userService.create(name);
+  }
 }

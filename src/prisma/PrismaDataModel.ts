@@ -77,16 +77,26 @@ export class PrismaDataModel {
   async deleteType(contentTypeName: string) {
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
-    writeFile(PrismaDataModel.contentTypeDataModelPath, fileContent.replace(regex, ''));
+    writeFile(
+      PrismaDataModel.contentTypeDataModelPath,
+      fileContent.replace(regex, ''),
+    );
   }
 
   async deleteContentTypeField(contentTypeName: string, fieldName: string) {
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
     const matchedContent = fileContent.match(regex)[0];
-    if (matchedContent === null) return new Error(`Cannot find content type ${contentTypeName}`);
-    const typeWithRemovedField = matchedContent.replace(new RegExp(`${fieldName}.*\\s`), '');
-    writeFile(PrismaDataModel.contentTypeDataModelPath, fileContent.replace(regex, typeWithRemovedField));
+    if (matchedContent === null)
+      return new Error(`Cannot find content type ${contentTypeName}`);
+    const typeWithRemovedField = matchedContent.replace(
+      new RegExp(`${fieldName}.*\\s`),
+      '',
+    );
+    writeFile(
+      PrismaDataModel.contentTypeDataModelPath,
+      fileContent.replace(regex, typeWithRemovedField),
+    );
   }
 
   private typeExists(typeName: string): boolean {
@@ -96,7 +106,9 @@ export class PrismaDataModel {
   }
 
   private async reloadDatamodel() {
-    const fileContent = await readFile(PrismaDataModel.contentTypeDataModelPath);
+    const fileContent = await readFile(
+      PrismaDataModel.contentTypeDataModelPath,
+    );
     this.contentTypeDataModel = fileContent;
   }
 
