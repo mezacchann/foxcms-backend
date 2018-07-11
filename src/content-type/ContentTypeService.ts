@@ -5,6 +5,7 @@ import { request } from 'graphql-request';
 @Injectable()
 export class ContentTypeService {
   constructor(
+    @Inject('PrismaEndpoint') private readonly prismaEndpoint: string,
     @Inject('PrismaDataModel')
     private readonly prismaDataModel: PrismaDataModel,
   ) {}
@@ -25,7 +26,7 @@ export class ContentTypeService {
       }
     }`;
 
-    const queryResult = await request('http://localhost:3000/graphql', query);
+    const queryResult = await request(this.prismaEndpoint, query);
     const contentTypeName = (queryResult as any).contentType.name;
     await this.prismaDataModel.addField(
       contentTypeName,
@@ -50,7 +51,7 @@ export class ContentTypeService {
     }`;
 
     const queryResult = (await request(
-      'http://localhost:3000/graphql',
+      this.prismaEndpoint,
       query,
     )) as any;
     this.prismaDataModel.deleteContentTypeField(

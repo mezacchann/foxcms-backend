@@ -14,6 +14,7 @@ import { Prisma } from 'prisma-binding';
 export class AppModule implements NestModule {
   constructor(
     private readonly graphQLFactory: GraphQLFactory,
+    @Inject('PrismaEndpoint') private readonly prismaEndpoint: string,
     @Inject('PrismaSchema') private readonly remoteSchema: GraphQLSchema,
   ) {}
 
@@ -32,7 +33,7 @@ export class AppModule implements NestModule {
             ...req,
             prisma: new Prisma({
               typeDefs: 'src/generatedPrismaSchema/prisma.graphql',
-              endpoint: 'http://localhost:4466',
+              endpoint: this.prismaEndpoint,
             }),
           },
         })),
