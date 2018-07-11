@@ -26,7 +26,7 @@ export class ContentTypeService {
     }`;
 
     const queryResult = await request('http://localhost:3000/graphql', query);
-    const contentTypeName = queryResult.contentType.name;
+    const contentTypeName = (queryResult as any).contentType.name;
     await this.prismaDataModel.addField(
       contentTypeName,
       fieldName,
@@ -49,10 +49,10 @@ export class ContentTypeService {
       }
     }`;
 
-    const queryResult = await request('http://localhost:3000/graphql', query);
+    const queryResult = await request('http://localhost:3000/graphql', query) as any;
     this.prismaDataModel.deleteContentTypeField(
       queryResult.contentTypeFields[0].contentType.name,
       queryResult.contentTypeFields[0].name,
-    );  
+    );
   }
 }
