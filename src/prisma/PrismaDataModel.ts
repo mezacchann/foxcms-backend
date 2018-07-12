@@ -114,4 +114,8 @@ export class PrismaDataModel {
   async deploy() {
     return spawn('prisma', ['deploy', 'f']);
   }
+
+  getContentTypeDataModel(): Buffer {
+    return Buffer.from(this.contentTypeDataModel);
+  }
 }
