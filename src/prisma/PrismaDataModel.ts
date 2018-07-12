@@ -78,12 +78,15 @@ export class PrismaDataModel {
   }
 
   async deleteType(contentTypeName: string) {
+    if (!this.typeExists(contentTypeName))
+      throw new Error(`Type ${contentTypeName} doesn't exists`);
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
-    return writeFile(
+    await writeFile(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
     );
+    await this.reloadDatamodel();
   }
 
   async deleteContentTypeField(contentTypeName: string, fieldName: string) {
