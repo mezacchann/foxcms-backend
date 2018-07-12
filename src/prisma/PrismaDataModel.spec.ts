@@ -75,13 +75,17 @@ describe('PrismaDataModel', () => {
     });
 
     it('Should throw an error when adding a field to a not existent content type', async () => {
-      expect(await sync(prismaDataModel.addField('photo', 'uri', 'String', true))).toThrow();
+      expect(
+        await sync(prismaDataModel.addField('photo', 'uri', 'String', true)),
+      ).toThrow();
     });
 
     it('Should throw an error when adding a field with the same name to the same content type', async () => {
       await prismaDataModel.addType('photo');
       await prismaDataModel.addField('photo', 'width', 'Number', true);
-      expect(await sync(prismaDataModel.addField('photo', 'width', 'String', true))).toThrow();
+      expect(
+        await sync(prismaDataModel.addField('photo', 'width', 'String', true)),
+      ).toThrow();
     });
   });
 
@@ -102,6 +106,37 @@ describe('PrismaDataModel', () => {
     it('Should throw an error when deleting an not existent content type', async () => {
       await prismaDataModel.addType('photo');
       expect(await sync(prismaDataModel.deleteType('photo2'))).toThrow();
+    });
+  });
+
+  describe('Delete a content type field from the data model', () => {
+    it('Delete a content type field from the data model', async () => {
+      await prismaDataModel.addType('photo');
+      await prismaDataModel.addField('photo', 'width', 'Number', true);
+      await prismaDataModel.addField('photo', 'height', 'Number', true);
+      await prismaDataModel.addField('photo', 'size', 'Number', false);
+      await prismaDataModel.addField('photo', 'uri', 'String', true);
+      await prismaDataModel.deleteContentTypeField('photo', 'height');
+      await prismaDataModel.deleteContentTypeField('photo', 'width');
+      const expectedContent = await readFile(
+        './test/resources/contentTypes.deleteField.graphql.txt',
+      );
+      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
+        expectedContent.toString(),
+      );
+    });
+
+    it('Throw an error when deleting an not existent content type field', async () => {
+      await prismaDataModel.addType('photo');
+      await prismaDataModel.addField('photo', 'width', 'Number', true);
+      await prismaDataModel.addField('photo', 'height', 'Number', true);
+      await prismaDataModel.addField('photo', 'size', 'Number', false);
+      await prismaDataModel.addField('photo', 'uri', 'String', true);
+      await prismaDataModel.deleteContentTypeField('photo', 'height');
+
+      expect(
+        await sync(prismaDataModel.deleteContentTypeField('photo', 'width2')),
+      ).toThrow();
     });
   });
 

@@ -1,0 +1,10 @@
+type FileCannotBeEmpty {
+  id: ID! @unique
+}
+type photo {
+  uri: String!
+  size: Number
+  
+  
+  id: ID! @unique
+}
