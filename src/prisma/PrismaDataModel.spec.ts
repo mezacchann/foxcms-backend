@@ -46,6 +46,10 @@ describe('PrismaDataModel', () => {
       await prismaDataModel.addType('photo');
       expect(await sync(prismaDataModel.addType('photo'))).toThrow();
     });
+
+    it('Should throw an error when the type name contains a whitespace', async () => {
+      expect(await sync(prismaDataModel.addType('pho to'))).toThrow();
+    });
   });
 
   afterEach(async () => {

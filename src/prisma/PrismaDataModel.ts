@@ -19,6 +19,8 @@ export class PrismaDataModel {
   async addType(typeName: string) {
     if (this.typeExists(typeName))
       throw new Error(`Type ${typeName} already exists`);
+    if(/\s/.test(typeName))
+      throw new Error('Type name may not contain any whitespaces');
     try {
       await this.addTypeToDatamodel(typeName);
       await this.reloadDatamodel();
