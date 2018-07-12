@@ -38,10 +38,13 @@ export class PrismaDataModel {
     fieldType: any,
     isRequired: boolean,
   ) {
-    const indexOfDataType = this.contentTypeDataModel.indexOf(contentTypeName);
-    if (indexOfDataType === -1)
+    if (!this.typeExists(contentTypeName))
       throw new Error(
         `Cannot add Field. Type ${contentTypeName} doesn't exist`,
+      );
+    if (this.fieldExistsWithinType(contentTypeName, fieldName))
+      throw new Error(
+        `Field ${fieldName} exists already within type ${contentTypeName}`,
       );
     await this.addFieldToDatamodel(
       contentTypeName,
@@ -103,6 +106,12 @@ export class PrismaDataModel {
       this.contentTypeDataModelPath,
       fileContent.replace(regex, typeWithRemovedField),
     );
+  }
+
+  private fieldExistsWithinType(typeName: string, fieldName: string) {
+    const regex = new RegExp(`type.*${typeName}.*{([^}]+)}`);
+    const result = this.contentTypeDataModel.toString().match(regex);
+    return result[0].indexOf(fieldName) > -1;
   }
 
   private typeExists(typeName: string): boolean {
