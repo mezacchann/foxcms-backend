@@ -1,0 +1,6 @@
+type FileCannotBeEmpty {
+  id: ID! @unique
+}
+type photo {
+  id: ID! @unique
+}
