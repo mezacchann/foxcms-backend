@@ -6,6 +6,7 @@ import * as util from 'util';
 
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
+const sync = fn => fn.then(res => () => res).catch(err => () => { throw err; });
 
 describe('PrismaDataModel', () => {
   let prismaDataModel: PrismaDataModel;
@@ -41,10 +42,9 @@ describe('PrismaDataModel', () => {
       expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(expectedContent.toString());
     });
 
-    it('should throw', async () => {
+    it('Should throw an error when adding the same content type twice', async () => {
       await prismaDataModel.addType('photo');
-      const expectedContent = await readFile('./test/resources/contentTypes.addType_1.graphql.txt');
-      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(expectedContent.toString());
+      expect(await sync(prismaDataModel.addType('photo'))).toThrow();
     });
   });
 
