@@ -10,11 +10,10 @@ const writeFile = util.promisify(fs.writeFile);
 
 @Injectable()
 export class PrismaDataModel {
-  private static readonly contentTypeDataModelPath =
-    './prisma/contentTypes.graphql';
   private readonly logger = new Logger(PrismaDataModel.name, true);
   constructor(
     @Inject('ContentTypesDatamodel') private contentTypeDataModel: Buffer,
+    @Inject('ContentTypeDataModelPath') private contentTypeDataModelPath: string,
   ) {}
 
   async addType(typeName: string) {
@@ -54,7 +53,7 @@ export class PrismaDataModel {
     type ${typeName} {
       id: ID! @unique
     }`;
-    return appendFile(PrismaDataModel.contentTypeDataModelPath, typeTemplate);
+    return appendFile(this.contentTypeDataModelPath, typeTemplate);
   }
 
   private async addFieldToDatamodel(
@@ -71,14 +70,14 @@ export class PrismaDataModel {
       fileContent.slice(0, idx) +
       `\n  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
       fileContent.slice(idx);
-    writeFile(PrismaDataModel.contentTypeDataModelPath, result);
+    writeFile(this.contentTypeDataModelPath, result);
   }
 
   async deleteType(contentTypeName: string) {
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
     writeFile(
-      PrismaDataModel.contentTypeDataModelPath,
+      this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
     );
   }
@@ -94,7 +93,7 @@ export class PrismaDataModel {
       '',
     );
     writeFile(
-      PrismaDataModel.contentTypeDataModelPath,
+      this.contentTypeDataModelPath,
       fileContent.replace(regex, typeWithRemovedField),
     );
   }
@@ -107,7 +106,7 @@ export class PrismaDataModel {
 
   private async reloadDatamodel() {
     const fileContent = await readFile(
-      PrismaDataModel.contentTypeDataModelPath,
+      this.contentTypeDataModelPath,
     );
     this.contentTypeDataModel = fileContent;
   }
