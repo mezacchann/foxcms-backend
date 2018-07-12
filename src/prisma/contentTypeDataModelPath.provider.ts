@@ -1,4 +1,4 @@
-const contentTypeDataModelPath = {
+export const contentTypeDataModelPath = {
     provide: 'ContentTypeDataModelPath',
     useValue: './prisma/contentTypes.graphql',
   };
