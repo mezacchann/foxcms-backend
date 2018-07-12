@@ -79,6 +79,26 @@ describe('PrismaDataModel', () => {
     });
   });
 
+  describe('Delete a content type from the data model', () => {
+    it('Delete the content type from the data model', async () => {
+      await prismaDataModel.addType('photo');
+      await prismaDataModel.addType('photo2');
+      await prismaDataModel.addType('photo3');
+      await prismaDataModel.deleteType('photo2');
+      const expectedContent = await readFile(
+        './test/resources/contentTypes.deleteType.graphql.txt',
+      );
+      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
+        expectedContent.toString(),
+      );
+    });
+
+    it('Should throw an error when deleting an not existent content type', async () => {
+      await prismaDataModel.addType('photo');
+      expect(await sync(prismaDataModel.deleteType('photo2'))).toThrow();
+    });
+  });
+
   afterEach(async () => {
     writeFile(contentTypeDataModelPath, initialDatamodelContent);
   });
