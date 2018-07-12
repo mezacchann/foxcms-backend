@@ -93,19 +93,24 @@ export class PrismaDataModel {
   }
 
   async deleteContentTypeField(contentTypeName: string, fieldName: string) {
+    if (!this.typeExists(contentTypeName))
+      throw new Error(`Type ${contentTypeName} doesn't exists`);
+    if (!this.fieldExistsWithinType(contentTypeName, fieldName))
+      throw new Error(
+        `Field ${fieldName} doesn't existP within type ${contentTypeName}`,
+      );
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
     const matchedContent = fileContent.match(regex)[0];
-    if (matchedContent === null)
-      return new Error(`Cannot find content type ${contentTypeName}`);
     const typeWithRemovedField = matchedContent.replace(
-      new RegExp(`${fieldName}.*\\s`),
+      new RegExp(`${fieldName}.*`),
       '',
     );
-    return writeFile(
+    await writeFile(
       this.contentTypeDataModelPath,
-      fileContent.replace(regex, typeWithRemovedField),
+      fileContent.replace(matchedContent, typeWithRemovedField),
     );
+    await this.reloadDatamodel();
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
