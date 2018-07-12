@@ -59,6 +59,26 @@ describe('PrismaDataModel', () => {
     });
   });
 
+  describe('Add a new field to a content type', () => {
+    it('Should add new fields to a content type', async () => {
+      await prismaDataModel.addType('photo');
+      await prismaDataModel.addField('photo', 'width', 'Number', true);
+      await prismaDataModel.addField('photo', 'height', 'Number', true);
+      await prismaDataModel.addField('photo', 'size', 'Number', false);
+      await prismaDataModel.addField('photo', 'uri', 'String', true);
+      const expectedContent = await readFile(
+        './test/resources/contentTypes.addField.graphql.txt',
+      );
+      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
+        expectedContent.toString(),
+      );
+    });
+
+    it('Should throw an error when adding a field to a not existent content type', async () => {
+      expect(await sync(prismaDataModel.addField('photo', 'uri', 'String', true))).toThrow();
+    });
+  });
+
   afterEach(async () => {
     writeFile(contentTypeDataModelPath, initialDatamodelContent);
   });
