@@ -4,7 +4,6 @@ type FileCannotBeEmpty {
 type photo {
   id: ID! @unique
 }
-
 type photo3 {
   id: ID! @unique
 }

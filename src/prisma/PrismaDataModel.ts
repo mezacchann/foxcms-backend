@@ -84,7 +84,7 @@ export class PrismaDataModel {
     if (!this.typeExists(contentTypeName))
       throw new Error(`Type ${contentTypeName} doesn't exists`);
     const fileContent = this.contentTypeDataModel.toString();
-    const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
+    const regex = new RegExp(`type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`);
     await writeFile(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
