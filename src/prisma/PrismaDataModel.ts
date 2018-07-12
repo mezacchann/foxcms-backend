@@ -70,13 +70,13 @@ export class PrismaDataModel {
       fileContent.slice(0, idx) +
       `\n  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
       fileContent.slice(idx);
-    writeFile(this.contentTypeDataModelPath, result);
+    return writeFile(this.contentTypeDataModelPath, result);
   }
 
   async deleteType(contentTypeName: string) {
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
-    writeFile(
+    return writeFile(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
     );
@@ -92,7 +92,7 @@ export class PrismaDataModel {
       new RegExp(`${fieldName}.*\\s`),
       '',
     );
-    writeFile(
+    return writeFile(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, typeWithRemovedField),
     );
