@@ -50,10 +50,7 @@ export class ContentTypeService {
       }
     }`;
 
-    const queryResult = (await request(
-      this.prismaEndpoint,
-      query,
-    )) as any;
+    const queryResult = (await request(this.prismaEndpoint, query)) as any;
     this.prismaDataModel.deleteContentTypeField(
       queryResult.contentTypeFields[0].contentType.name,
       queryResult.contentTypeFields[0].name,

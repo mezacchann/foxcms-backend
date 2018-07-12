@@ -13,13 +13,14 @@ export class PrismaDataModel {
   private readonly logger = new Logger(PrismaDataModel.name, true);
   constructor(
     @Inject('ContentTypesDatamodel') private contentTypeDataModel: Buffer,
-    @Inject('ContentTypeDataModelPath') private contentTypeDataModelPath: string,
+    @Inject('ContentTypeDataModelPath')
+    private contentTypeDataModelPath: string,
   ) {}
 
   async addType(typeName: string) {
     if (this.typeExists(typeName))
       throw new Error(`Type ${typeName} already exists`);
-    if(/\s/.test(typeName))
+    if (/\s/.test(typeName))
       throw new Error('Type name may not contain any whitespaces');
     try {
       await this.addTypeToDatamodel(typeName);
@@ -107,9 +108,7 @@ export class PrismaDataModel {
   }
 
   private async reloadDatamodel() {
-    const fileContent = await readFile(
-      this.contentTypeDataModelPath,
-    );
+    const fileContent = await readFile(this.contentTypeDataModelPath);
     this.contentTypeDataModel = fileContent;
   }
 

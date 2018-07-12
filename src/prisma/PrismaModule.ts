@@ -5,7 +5,14 @@ import { endpointProvider } from './endpoint.provider';
 import { PrismaDataModel } from './PrismaDataModel';
 import { contentTypeDataModelPath } from './contentTypeDataModelPath.provider';
 @Module({
-  providers: [remoteSchema, ...dataModels, endpointProvider, contentTypeDataModelPath, PrismaDataModel, Logger],
+  providers: [
+    remoteSchema,
+    ...dataModels,
+    endpointProvider,
+    contentTypeDataModelPath,
+    PrismaDataModel,
+    Logger,
+  ],
   exports: [remoteSchema, endpointProvider, PrismaDataModel],
 })
 export class PrismaModule {}
