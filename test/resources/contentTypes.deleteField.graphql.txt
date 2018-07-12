@@ -4,7 +4,5 @@ type FileCannotBeEmpty {
 type photo {
   uri: String!
   size: Number
-  
-  
   id: ID! @unique
 }
