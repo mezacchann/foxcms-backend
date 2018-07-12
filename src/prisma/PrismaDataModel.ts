@@ -130,10 +130,6 @@ export class PrismaDataModel {
     this.contentTypeDataModel = fileContent;
   }
 
-  async deploy() {
-    return spawn('prisma', ['deploy', 'f']);
-  }
-
   getContentTypeDataModel(): Buffer {
     return Buffer.from(this.contentTypeDataModel);
   }
