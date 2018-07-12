@@ -38,7 +38,7 @@ describe('PrismaDataModel', () => {
     it('should add a new type to the data model', async () => {
       await prismaDataModel.addType('photo');
       const expectedContent = await readFile('./test/resources/contentTypes.addType_1.graphql.txt');
-      expect(prismaDataModel.contentTypeDataModel.toString()).toBe(expectedContent.toString());
+      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(expectedContent.toString());
     });
   });
 
