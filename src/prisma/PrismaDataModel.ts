@@ -49,6 +49,7 @@ export class PrismaDataModel {
       fieldType,
       isRequired,
     );
+    await this.reloadDatamodel();
   }
 
   private async addTypeToDatamodel(typeName: string) {
