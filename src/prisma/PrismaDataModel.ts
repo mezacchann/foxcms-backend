@@ -103,7 +103,7 @@ export class PrismaDataModel {
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
     const matchedContent = fileContent.match(regex)[0];
     const typeWithRemovedField = matchedContent.replace(
-      new RegExp(`${fieldName}.*`),
+      new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
       '',
     );
     await writeFile(
