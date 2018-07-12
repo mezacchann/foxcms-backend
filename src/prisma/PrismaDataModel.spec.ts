@@ -77,6 +77,12 @@ describe('PrismaDataModel', () => {
     it('Should throw an error when adding a field to a not existent content type', async () => {
       expect(await sync(prismaDataModel.addField('photo', 'uri', 'String', true))).toThrow();
     });
+
+    it('Should throw an error when adding a field with the same name to the same content type', async () => {
+      await prismaDataModel.addType('photo');
+      await prismaDataModel.addField('photo', 'width', 'Number', true);
+      expect(await sync(prismaDataModel.addField('photo', 'width', 'String', true))).toThrow();
+    });
   });
 
   describe('Delete a content type from the data model', () => {
