@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { appendFileSync, readFileSync, writeFileSync } from 'fs';
 import outdent from 'outdent';
+import { spawnSync } from 'child_process';
 
 @Injectable()
 export class PrismaDataModel {
@@ -19,6 +20,7 @@ export class PrismaDataModel {
     try {
       this.addTypeToDatamodel(typeName);
       this.reloadDatamodel();
+      this.deploy();
       this.logger.log(`Added and deployed new content type ${typeName}`);
     } catch (err) {
       this.logger.error(err);
@@ -42,6 +44,7 @@ export class PrismaDataModel {
       );
     this.addFieldToDatamodel(contentTypeName, fieldName, fieldType, isRequired);
     this.reloadDatamodel();
+    this.deploy();
   }
 
   private addTypeToDatamodel(typeName: string) {
@@ -82,6 +85,7 @@ export class PrismaDataModel {
       fileContent.replace(regex, ''),
     );
     this.reloadDatamodel();
+    this.deploy();
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string) {
@@ -103,6 +107,7 @@ export class PrismaDataModel {
       fileContent.replace(matchedContent, typeWithRemovedField),
     );
     this.reloadDatamodel();
+    this.deploy();
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
@@ -124,5 +129,9 @@ export class PrismaDataModel {
 
   getContentTypeDataModel(): Buffer {
     return Buffer.from(this.contentTypeDataModel);
+  }
+
+  private deploy() {
+    spawnSync('prisma', ['deploy', 'f']);
   }
 }
