@@ -1,11 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import * as fs from 'fs';
-import * as util from 'util';
+import { appendFileSync, readFileSync, writeFileSync } from 'fs';
 import outdent from 'outdent';
-
-const appendFile = util.promisify(fs.appendFile);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
 
 @Injectable()
 export class PrismaDataModel {
@@ -16,13 +11,13 @@ export class PrismaDataModel {
     private contentTypeDataModelPath: string,
   ) {}
 
-  async addType(typeName: string) {
+  addType(typeName: string) {
     if (this.typeExists(typeName))
       throw new Error(`Type ${typeName} already exists`);
     if (/\s/.test(typeName))
       throw new Error('Type name may not contain any whitespaces');
     try {
-      await this.addTypeToDatamodel(typeName);
+      this.addTypeToDatamodel(typeName);
       this.reloadDatamodel();
       this.logger.log(`Added and deployed new content type ${typeName}`);
     } catch (err) {
@@ -31,7 +26,7 @@ export class PrismaDataModel {
     }
   }
 
-  async addField(
+  addField(
     contentTypeName: string,
     fieldName: string,
     fieldType: any,
@@ -45,24 +40,19 @@ export class PrismaDataModel {
       throw new Error(
         `Field ${fieldName} exists already within type ${contentTypeName}`,
       );
-    await this.addFieldToDatamodel(
-      contentTypeName,
-      fieldName,
-      fieldType,
-      isRequired,
-    );
+    this.addFieldToDatamodel(contentTypeName, fieldName, fieldType, isRequired);
     this.reloadDatamodel();
   }
 
-  private async addTypeToDatamodel(typeName: string) {
+  private addTypeToDatamodel(typeName: string) {
     const typeTemplate = outdent`\n
     type ${typeName} {
       id: ID! @unique
     }`;
-    return appendFile(this.contentTypeDataModelPath, typeTemplate);
+    appendFileSync(this.contentTypeDataModelPath, typeTemplate);
   }
 
-  private async addFieldToDatamodel(
+  private addFieldToDatamodel(
     contentTypeName: string,
     fieldName: string,
     fieldType: any,
@@ -77,29 +67,29 @@ export class PrismaDataModel {
       fileContent.slice(0, idx) +
       `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
       fileContent.slice(idx);
-    return writeFile(this.contentTypeDataModelPath, result);
+    writeFileSync(this.contentTypeDataModelPath, result);
   }
 
-  async deleteType(contentTypeName: string) {
+  deleteType(contentTypeName: string) {
     if (!this.typeExists(contentTypeName))
       throw new Error(`Type ${contentTypeName} doesn't exists`);
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(
       `type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`,
     );
-    await writeFile(
+    writeFileSync(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
     );
     this.reloadDatamodel();
   }
 
-  async deleteContentTypeField(contentTypeName: string, fieldName: string) {
+  deleteContentTypeField(contentTypeName: string, fieldName: string) {
     if (!this.typeExists(contentTypeName))
       throw new Error(`Type ${contentTypeName} doesn't exists`);
     if (!this.fieldExistsWithinType(contentTypeName, fieldName))
       throw new Error(
-        `Field ${fieldName} doesn't existP within type ${contentTypeName}`,
+        `Field ${fieldName} doesn't exist within type ${contentTypeName}`,
       );
     const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
@@ -108,7 +98,7 @@ export class PrismaDataModel {
       new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
       '',
     );
-    await writeFile(
+    writeFileSync(
       this.contentTypeDataModelPath,
       fileContent.replace(matchedContent, typeWithRemovedField),
     );
@@ -128,7 +118,7 @@ export class PrismaDataModel {
   }
 
   private reloadDatamodel() {
-    const fileContent = fs.readFileSync(this.contentTypeDataModelPath);
+    const fileContent = readFileSync(this.contentTypeDataModelPath);
     this.contentTypeDataModel = fileContent;
   }
 
