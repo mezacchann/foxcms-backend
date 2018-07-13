@@ -2,9 +2,9 @@ type FileCannotBeEmpty {
   id: ID! @unique
 }
 type photo {
-  uri: String!
-  size: Number
-  height: Number!
-  width: Number!
   id: ID! @unique
+  width: Number!
+  height: Number!
+  size: Number
+  uri: String!
 }

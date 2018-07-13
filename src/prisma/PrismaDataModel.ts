@@ -70,12 +70,13 @@ export class PrismaDataModel {
     isRequired: boolean,
   ) {
     const fileContent = this.contentTypeDataModel.toString();
-    const idx =
-      fileContent.indexOf(`type ${contentTypeName} {`) +
-      `type ${contentTypeName} {`.length;
+    const matchedType = fileContent.match(
+      `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
+    )[0];
+    const idx = fileContent.indexOf(matchedType) + matchedType.length;
     const result =
       fileContent.slice(0, idx) +
-      `\n  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
+      `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
       fileContent.slice(idx);
     return writeFile(this.contentTypeDataModelPath, result);
   }
@@ -84,7 +85,9 @@ export class PrismaDataModel {
     if (!this.typeExists(contentTypeName))
       throw new Error(`Type ${contentTypeName} doesn't exists`);
     const fileContent = this.contentTypeDataModel.toString();
-    const regex = new RegExp(`type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`);
+    const regex = new RegExp(
+      `type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`,
+    );
     await writeFile(
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
