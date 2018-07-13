@@ -6,8 +6,8 @@ export class ContentTypeResolver {
   constructor(private readonly contentTypeService: ContentTypeService) {}
 
   @Mutation()
-  async addContentType(obj, { contentTypeName }, context, info) {
-    await this.contentTypeService.addContentType(contentTypeName);
+  addContentType(obj, { contentTypeName }, context, info) {
+    this.contentTypeService.addContentType(contentTypeName);
     return context.prisma.mutation.createContentType(
       {
         data: {
@@ -45,7 +45,7 @@ export class ContentTypeResolver {
   }
 
   @Mutation()
-  async removeContentType(obj, args, context, info) {
+  removeContentType(obj, args, context, info) {
     const { contentTypeName } = args;
     this.contentTypeService.deleteContentType(contentTypeName);
     return context.prisma.mutation.deleteContentType(
