@@ -1,7 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as util from 'util';
-import { spawn } from 'child-process-promise';
 import outdent from 'outdent';
 
 const appendFile = util.promisify(fs.appendFile);
@@ -24,7 +23,7 @@ export class PrismaDataModel {
       throw new Error('Type name may not contain any whitespaces');
     try {
       await this.addTypeToDatamodel(typeName);
-      await this.reloadDatamodel();
+      this.reloadDatamodel();
       this.logger.log(`Added and deployed new content type ${typeName}`);
     } catch (err) {
       this.logger.error(err);
@@ -52,7 +51,7 @@ export class PrismaDataModel {
       fieldType,
       isRequired,
     );
-    await this.reloadDatamodel();
+    this.reloadDatamodel();
   }
 
   private async addTypeToDatamodel(typeName: string) {
@@ -92,7 +91,7 @@ export class PrismaDataModel {
       this.contentTypeDataModelPath,
       fileContent.replace(regex, ''),
     );
-    await this.reloadDatamodel();
+    this.reloadDatamodel();
   }
 
   async deleteContentTypeField(contentTypeName: string, fieldName: string) {
@@ -113,7 +112,7 @@ export class PrismaDataModel {
       this.contentTypeDataModelPath,
       fileContent.replace(matchedContent, typeWithRemovedField),
     );
-    await this.reloadDatamodel();
+    this.reloadDatamodel();
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
@@ -128,8 +127,8 @@ export class PrismaDataModel {
     return result !== null;
   }
 
-  private async reloadDatamodel() {
-    const fileContent = await readFile(this.contentTypeDataModelPath);
+  private reloadDatamodel() {
+    const fileContent = fs.readFileSync(this.contentTypeDataModelPath);
     this.contentTypeDataModel = fileContent;
   }
 
