@@ -10,8 +10,8 @@ export class ContentTypeService {
     private readonly prismaDataModel: PrismaDataModel,
   ) {}
 
-  async addContentType(contentTypeName: string) {
-    await this.prismaDataModel.addType(contentTypeName);
+  addContentType(contentTypeName: string) {
+    this.prismaDataModel.addType(contentTypeName);
   }
 
   async addContentTypeField(
@@ -28,7 +28,7 @@ export class ContentTypeService {
 
     const queryResult = await request(this.prismaEndpoint, query);
     const contentTypeName = (queryResult as any).contentType.name;
-    await this.prismaDataModel.addField(
+    this.prismaDataModel.addField(
       contentTypeName,
       fieldName,
       fieldType,
@@ -36,7 +36,7 @@ export class ContentTypeService {
     );
   }
 
-  async deleteContentType(contentTypeName: string) {
+  deleteContentType(contentTypeName: string) {
     this.prismaDataModel.deleteType(contentTypeName);
   }
 
