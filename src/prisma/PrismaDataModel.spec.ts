@@ -28,6 +28,7 @@ describe('PrismaDataModel', () => {
     }).compile();
 
     prismaDataModel = module.get<PrismaDataModel>(PrismaDataModel);
+    jest.spyOn(prismaDataModel, 'deploy').mockImplementation(() => '');
   });
 
   describe('Add a new content type to the data model', () => {
