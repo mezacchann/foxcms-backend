@@ -27,7 +27,9 @@ export class ApolloMiddleware implements NestMiddleware {
     @Inject('PrismaSchema') private remoteSchema: RemoteSchema,
     @Inject('PrismaEndpoint') private readonly prismaEndpoint: string,
   ) {
-    const localTypeDefs = this.graphQLFactory.mergeTypesByPaths('src/**/*.graphql');
+    const localTypeDefs = this.graphQLFactory.mergeTypesByPaths(
+      'src/**/*.graphql',
+    );
     const mergedTypeDefs = mergeTypes([
       localTypeDefs,
       this.remoteSchema.schemaDefinition,
