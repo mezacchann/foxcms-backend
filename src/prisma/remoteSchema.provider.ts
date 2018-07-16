@@ -1,6 +1,8 @@
 import { HttpLink } from 'apollo-link-http';
 import { introspectSchema, makeRemoteExecutableSchema } from 'graphql-tools';
 import fetch from 'node-fetch';
+import { printSchema } from 'graphql';
+import { RemoteSchema } from './RemoteSchema';
 
 export const remoteSchema = {
   provide: 'PrismaSchema',
@@ -11,7 +13,7 @@ export const remoteSchema = {
       schema,
       link,
     });
-    return executableSchema;
+    return new RemoteSchema(printSchema(executableSchema), executableSchema);
   },
   inject: ['PrismaEndpoint'],
 };

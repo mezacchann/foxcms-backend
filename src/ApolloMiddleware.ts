@@ -7,10 +7,15 @@ import {
 import { runHttpQuery } from 'apollo-server-core';
 import { Prisma } from 'prisma-binding';
 import { GraphQLFactory } from '@nestjs/graphql';
-import { mergeSchemas } from 'graphql-tools';
-import { GraphQLSchema } from 'graphql';
-import { introspectSchema, makeRemoteExecutableSchema } from 'graphql-tools';
+import { GraphQLSchema, extendSchema } from 'graphql';
+import {
+  introspectSchema,
+  makeRemoteExecutableSchema,
+  mergeSchemas,
+} from 'graphql-tools';
+import { mergeTypes } from 'merge-graphql-schemas';
 import { HttpLink } from 'apollo-link-http';
+import { RemoteSchema } from './prisma/RemoteSchema';
 
 @Injectable()
 export class ApolloMiddleware implements NestMiddleware {
@@ -19,16 +24,22 @@ export class ApolloMiddleware implements NestMiddleware {
   private mergedSchema;
   constructor(
     private readonly graphQLFactory: GraphQLFactory,
-    @Inject('PrismaSchema') private remoteSchema: GraphQLSchema,
+    @Inject('PrismaSchema') private remoteSchema: RemoteSchema,
     @Inject('PrismaEndpoint') private readonly prismaEndpoint: string,
   ) {
-    const typeDefs = this.graphQLFactory.mergeTypesByPaths('src/**/*.graphql');
-    this.localSchema = this.graphQLFactory.createSchema({ typeDefs });
+    const localTypeDefs = this.graphQLFactory.mergeTypesByPaths('src/**/*.graphql');
+    const mergedTypeDefs = mergeTypes([
+      localTypeDefs,
+      this.remoteSchema.schemaDefinition,
+    ]);
+    this.localSchema = this.graphQLFactory.createSchema({
+      typeDefs: mergedTypeDefs,
+    });
     this.mergedSchema = mergeSchemas({
-      schemas: [this.localSchema, this.remoteSchema],
+      schemas: [this.localSchema, this.remoteSchema.executableSchema],
     });
     this.prisma = new Prisma({
-      typeDefs: 'src/generatedPrismaSchema/prisma.graphql',
+      typeDefs: this.remoteSchema.schemaDefinition,
       endpoint: this.prismaEndpoint,
     });
   }
@@ -78,12 +89,12 @@ export class ApolloMiddleware implements NestMiddleware {
   private async reloadSchema() {
     const link = new HttpLink({ uri: this.prismaEndpoint, fetch });
     const schema = await introspectSchema(link);
-    this.remoteSchema = makeRemoteExecutableSchema({
+    this.remoteSchema.executableSchema = makeRemoteExecutableSchema({
       schema,
       link,
     });
     this.mergedSchema = mergeSchemas({
-      schemas: [this.localSchema, this.remoteSchema],
+      schemas: [this.localSchema, this.remoteSchema.executableSchema],
     });
   }
 }
