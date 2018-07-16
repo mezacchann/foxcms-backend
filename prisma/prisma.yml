@@ -2,6 +2,3 @@ endpoint: https://us1.prisma.sh/waldemar-penner-1ce42e/cms/dev
 datamodel: 
   - datamodel.graphql
   - contentTypes.graphql
-hooks:
-  post-deploy:
-    - graphql get-schema -p prisma
