@@ -1,5 +1,6 @@
 # cms
-
+### circleci
+[![CircleCI](https://circleci.com/gh/w0wka91/cms/tree/master.svg?style=svg)](https://circleci.com/gh/w0wka91/cms/tree/master)
 ## Description
 
 CMS Backend
