@@ -131,7 +131,7 @@ export class PrismaDataModel {
     return Buffer.from(this.contentTypeDataModel);
   }
 
-  private deploy() {
+  deploy() {
     spawnSync('prisma', ['deploy', 'f']);
   }
 }
