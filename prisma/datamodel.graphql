@@ -19,3 +19,9 @@ type ContentTypeField {
   type: ContentTypeFieldType!
   isRequired: Boolean!
 }
+
+type Configuration {
+  id: ID! @unique
+  name: String! @unique
+  value: String!
+}

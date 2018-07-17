@@ -17,17 +17,26 @@ describe('PrismaDataModel', () => {
       providers: [
         PrismaDataModel,
         {
-          provide: 'ContentTypeDataModelPath',
+          provide: 'DynamicModelPath',
           useValue: contentTypeDataModelPath,
         },
         {
           provide: 'ContentTypesDatamodel',
           useValue: '',
         },
+        {
+          provide: 'DynamicModel',
+          useValue: '',
+        },
+        {
+          provide: 'PrismaEndpoint',
+          useValue: 'dummyEndpoint',
+        },
       ],
     }).compile();
 
     prismaDataModel = module.get<PrismaDataModel>(PrismaDataModel);
+    jest.spyOn(prismaDataModel, 'updateRemoteModel').mockImplementation(() => '');
     jest.spyOn(prismaDataModel, 'deploy').mockImplementation(() => '');
   });
 
@@ -37,9 +46,7 @@ describe('PrismaDataModel', () => {
       const expectedContent = readFileSync(
         './test/resources/contentTypes.addType.graphql.txt',
       );
-      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
-        expectedContent.toString(),
-      );
+      expect(prismaDataModel.getContent()).toBe(expectedContent.toString());
     });
 
     it('Should throw an error when adding the same content type twice', () => {
@@ -62,9 +69,7 @@ describe('PrismaDataModel', () => {
       const expectedContent = readFileSync(
         './test/resources/contentTypes.addField.graphql.txt',
       );
-      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
-        expectedContent.toString(),
-      );
+      expect(prismaDataModel.getContent()).toBe(expectedContent.toString());
     });
 
     it('Should throw an error when adding a field to a not existent content type', () => {
@@ -91,9 +96,7 @@ describe('PrismaDataModel', () => {
       const expectedContent = readFileSync(
         './test/resources/contentTypes.deleteType.graphql.txt',
       );
-      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
-        expectedContent.toString(),
-      );
+      expect(prismaDataModel.getContent()).toBe(expectedContent.toString());
     });
 
     it('Should throw an error when deleting an not existent content type', () => {
@@ -114,9 +117,7 @@ describe('PrismaDataModel', () => {
       const expectedContent = readFileSync(
         './test/resources/contentTypes.deleteField.graphql.txt',
       );
-      expect(prismaDataModel.getContentTypeDataModel().toString()).toBe(
-        expectedContent.toString(),
-      );
+      expect(prismaDataModel.getContent()).toBe(expectedContent.toString());
     });
 
     it('Throw an error when deleting an not existent content type field', () => {

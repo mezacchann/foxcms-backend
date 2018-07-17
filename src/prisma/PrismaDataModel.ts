@@ -1,14 +1,16 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { appendFileSync, readFileSync, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 import outdent from 'outdent';
 import { spawnSync } from 'child_process';
-
+import { request } from 'graphql-request';
+import { encode } from 'base-64';
 @Injectable()
 export class PrismaDataModel {
   private readonly logger = new Logger(PrismaDataModel.name, true);
   constructor(
-    @Inject('ContentTypesDatamodel') private contentTypeDataModel: Buffer,
-    @Inject('ContentTypeDataModelPath')
+    @Inject('DynamicModel') private content: string,
+    @Inject('PrismaEndpoint') private prismaEndpoint: string,
+    @Inject('DynamicModelPath')
     private contentTypeDataModelPath: string,
   ) {}
 
@@ -17,15 +19,8 @@ export class PrismaDataModel {
       throw new Error(`Type ${typeName} already exists`);
     if (/\s/.test(typeName))
       throw new Error('Type name may not contain any whitespaces');
-    try {
-      this.addTypeToDatamodel(typeName);
-      this.reloadDatamodel();
-      this.deploy();
-      this.logger.log(`Added and deployed new content type ${typeName}`);
-    } catch (err) {
-      this.logger.error(err);
-      throw new Error('Type cannot be added');
-    }
+    this.addTypeToDatamodel(typeName);
+    this.logger.log(`Added and deployed new content type ${typeName}`);
   }
 
   addField(
@@ -43,16 +38,37 @@ export class PrismaDataModel {
         `Field ${fieldName} exists already within type ${contentTypeName}`,
       );
     this.addFieldToDatamodel(contentTypeName, fieldName, fieldType, isRequired);
-    this.reloadDatamodel();
-    this.deploy();
   }
 
   private addTypeToDatamodel(typeName: string) {
-    const typeTemplate = outdent`\n
+    const typeTemplate = outdent`
     type ${typeName} {
       id: ID! @unique
     }`;
-    appendFileSync(this.contentTypeDataModelPath, typeTemplate);
+    if (this.content !== '') this.content += '\n';
+    this.updateModel(this.content + typeTemplate);
+  }
+
+  private updateModel(content: string) {
+    this.updateRemoteModel(content);
+    this.updateLocalModel(content);
+    this.deploy();
+  }
+
+  private updateLocalModel(content: string) {
+    this.content = content;
+    writeFileSync(this.contentTypeDataModelPath, content);
+  }
+
+  private async updateRemoteModel(content: string) {
+    const query = `mutation {
+      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${encode(
+        content,
+      )}"}) {
+        value
+      }
+    }`;
+    await request(this.prismaEndpoint, query);
   }
 
   private addFieldToDatamodel(
@@ -61,31 +77,24 @@ export class PrismaDataModel {
     fieldType: any,
     isRequired: boolean,
   ) {
-    const fileContent = this.contentTypeDataModel.toString();
-    const matchedType = fileContent.match(
+    const matchedType = this.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0];
-    const idx = fileContent.indexOf(matchedType) + matchedType.length;
+    const idx = this.content.indexOf(matchedType) + matchedType.length;
     const result =
-      fileContent.slice(0, idx) +
+      this.content.slice(0, idx) +
       `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
-      fileContent.slice(idx);
-    writeFileSync(this.contentTypeDataModelPath, result);
+      this.content.slice(idx);
+    this.updateModel(result);
   }
 
   deleteType(contentTypeName: string) {
     if (!this.typeExists(contentTypeName))
       throw new Error(`Type ${contentTypeName} doesn't exists`);
-    const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(
       `type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`,
     );
-    writeFileSync(
-      this.contentTypeDataModelPath,
-      fileContent.replace(regex, ''),
-    );
-    this.reloadDatamodel();
-    this.deploy();
+    this.updateModel(this.content.replace(regex, ''));
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string) {
@@ -95,40 +104,31 @@ export class PrismaDataModel {
       throw new Error(
         `Field ${fieldName} doesn't exist within type ${contentTypeName}`,
       );
-    const fileContent = this.contentTypeDataModel.toString();
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
-    const matchedContent = fileContent.match(regex)[0];
+    const matchedContent = this.content.match(regex)[0];
     const typeWithRemovedField = matchedContent.replace(
       new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
       '',
     );
-    writeFileSync(
-      this.contentTypeDataModelPath,
-      fileContent.replace(matchedContent, typeWithRemovedField),
+    this.updateModel(
+      this.content.replace(matchedContent, typeWithRemovedField),
     );
-    this.reloadDatamodel();
-    this.deploy();
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
     const regex = new RegExp(`type.*${typeName}.*{([^}]+)}`);
-    const result = this.contentTypeDataModel.toString().match(regex);
+    const result = this.content.match(regex);
     return result[0].indexOf(fieldName) > -1;
   }
 
   private typeExists(typeName: string): boolean {
     const regex = new RegExp(`type.*${typeName}.*{`);
-    const result = this.contentTypeDataModel.toString().match(regex);
+    const result = this.content.match(regex);
     return result !== null;
   }
 
-  private reloadDatamodel() {
-    const fileContent = readFileSync(this.contentTypeDataModelPath);
-    this.contentTypeDataModel = fileContent;
-  }
-
-  getContentTypeDataModel(): Buffer {
-    return Buffer.from(this.contentTypeDataModel);
+  getContent(): string {
+    return this.content;
   }
 
   deploy() {

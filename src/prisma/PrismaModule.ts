@@ -3,13 +3,13 @@ import { remoteSchema } from './remoteSchema.provider';
 import { dataModels } from './dataModels.provider';
 import { endpointProvider } from './endpoint.provider';
 import { PrismaDataModel } from './PrismaDataModel';
-import { contentTypeDataModelPath } from './contentTypeDataModelPath.provider';
+import { dynamicModelPathProvider } from './dynamicModelPath.provider';
 @Module({
   providers: [
     remoteSchema,
     ...dataModels,
     endpointProvider,
-    contentTypeDataModelPath,
+    dynamicModelPathProvider,
     PrismaDataModel,
     Logger,
   ],

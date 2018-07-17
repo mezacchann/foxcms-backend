@@ -1,4 +1,4 @@
 endpoint: https://cms-prisma.herokuapp.com/cms-dev/dev
 datamodel: 
   - datamodel.graphql
-  - contentTypes.graphql
+  - dynamicModel.graphql
