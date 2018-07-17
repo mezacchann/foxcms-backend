@@ -132,6 +132,6 @@ export class PrismaDataModel {
   }
 
   deploy() {
-    spawnSync('prisma', ['deploy', 'f']);
+    spawnSync('node_modules/.bin/prisma', ['deploy', 'f']);
   }
 }
