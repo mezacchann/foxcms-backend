@@ -1,6 +1,9 @@
 type ContentType {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   name: String! @unique
+  description: String
   fields: [ContentTypeField!]!
 }
 
@@ -14,6 +17,8 @@ enum ContentTypeFieldType {
 
 type ContentTypeField {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   contentType: ContentType!
   name: String!
   type: ContentTypeFieldType!
@@ -22,6 +27,8 @@ type ContentTypeField {
 
 type Configuration {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   name: String! @unique
   value: String!
 }
