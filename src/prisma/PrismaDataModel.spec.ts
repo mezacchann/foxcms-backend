@@ -36,7 +36,9 @@ describe('PrismaDataModel', () => {
     }).compile();
 
     prismaDataModel = module.get<PrismaDataModel>(PrismaDataModel);
-    jest.spyOn(prismaDataModel, 'updateRemoteModel').mockImplementation(() => '');
+    jest
+      .spyOn(prismaDataModel, 'updateRemoteModel')
+      .mockImplementation(() => '');
     jest.spyOn(prismaDataModel, 'deploy').mockImplementation(() => '');
   });
 
@@ -62,9 +64,9 @@ describe('PrismaDataModel', () => {
   describe('Add a new field to a content type', () => {
     it('Should add new fields to a content type', () => {
       prismaDataModel.addType('photo');
-      prismaDataModel.addField('photo', 'width', 'Number', true);
-      prismaDataModel.addField('photo', 'height', 'Number', true);
-      prismaDataModel.addField('photo', 'size', 'Number', false);
+      prismaDataModel.addField('photo', 'width', 'Float', true);
+      prismaDataModel.addField('photo', 'height', 'Float', true);
+      prismaDataModel.addField('photo', 'size', 'Float', false);
       prismaDataModel.addField('photo', 'uri', 'String', true);
       const expectedContent = readFileSync(
         './test/resources/contentTypes.addField.graphql.txt',
@@ -80,7 +82,7 @@ describe('PrismaDataModel', () => {
 
     it('Should throw an error when adding a field with the same name to the same content type', () => {
       prismaDataModel.addType('photo');
-      prismaDataModel.addField('photo', 'width', 'Number', true);
+      prismaDataModel.addField('photo', 'width', 'Float', true);
       expect(() =>
         prismaDataModel.addField('photo', 'width', 'String', true),
       ).toThrow();
@@ -108,9 +110,9 @@ describe('PrismaDataModel', () => {
   describe('Delete a content type field from the data model', () => {
     it('Delete a content type field from the data model', () => {
       prismaDataModel.addType('photo');
-      prismaDataModel.addField('photo', 'width', 'Number', true);
-      prismaDataModel.addField('photo', 'height', 'Number', true);
-      prismaDataModel.addField('photo', 'size', 'Number', false);
+      prismaDataModel.addField('photo', 'width', 'Float', true);
+      prismaDataModel.addField('photo', 'height', 'Float', true);
+      prismaDataModel.addField('photo', 'size', 'Float', false);
       prismaDataModel.addField('photo', 'uri', 'String', true);
       prismaDataModel.deleteContentTypeField('photo', 'height');
       prismaDataModel.deleteContentTypeField('photo', 'width');
@@ -122,9 +124,9 @@ describe('PrismaDataModel', () => {
 
     it('Throw an error when deleting an not existent content type field', () => {
       prismaDataModel.addType('photo');
-      prismaDataModel.addField('photo', 'width', 'Number', true);
-      prismaDataModel.addField('photo', 'height', 'Number', true);
-      prismaDataModel.addField('photo', 'size', 'Number', false);
+      prismaDataModel.addField('photo', 'width', 'Float', true);
+      prismaDataModel.addField('photo', 'height', 'Float', true);
+      prismaDataModel.addField('photo', 'size', 'Float', false);
       prismaDataModel.addField('photo', 'uri', 'String', true);
       prismaDataModel.deleteContentTypeField('photo', 'height');
 

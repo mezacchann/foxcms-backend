@@ -7,11 +7,20 @@ import { encode } from 'base-64';
 @Injectable()
 export class PrismaDataModel {
   private readonly logger = new Logger(PrismaDataModel.name, true);
+  private readonly customTypeToDataType = {
+    String: 'String',
+    Text: 'String',
+    Int: 'Int',
+    Float: 'Float',
+    Checkbox: 'Boolean',
+    Date: 'DateTime',
+    Json: 'Json',
+  };
+
   constructor(
     @Inject('DynamicModel') private content: string,
     @Inject('PrismaEndpoint') private prismaEndpoint: string,
-    @Inject('DynamicModelPath')
-    private contentTypeDataModelPath: string,
+    @Inject('DynamicModelPath') private contentTypeDataModelPath: string,
   ) {}
 
   addType(typeName: string) {
@@ -37,7 +46,12 @@ export class PrismaDataModel {
       throw new Error(
         `Field ${fieldName} exists already within type ${contentTypeName}`,
       );
-    this.addFieldToDatamodel(contentTypeName, fieldName, fieldType, isRequired);
+    this.addFieldToDatamodel(
+      contentTypeName,
+      fieldName,
+      this.customTypeToDataType[fieldType],
+      isRequired,
+    );
   }
 
   private addTypeToDatamodel(typeName: string) {

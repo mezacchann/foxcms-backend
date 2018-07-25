@@ -1,5 +1,5 @@
 type photo {
   id: ID! @unique
-  size: Number
+  size: Float
   uri: String!
 }
