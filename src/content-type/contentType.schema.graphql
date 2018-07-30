@@ -1,10 +1,14 @@
+input ContentTypeFieldInput {
+  contentTypeId: ID!
+  fieldName: String!
+  fieldType: ContentTypeFieldType
+  isRequired: Boolean
+}
+
 type Mutation {
   addContentType(contentTypeName: String!, description: String): ContentType!
   addContentTypeField(
-    contentTypeId: ID!
-    fieldName: String!
-    fieldType: ContentTypeFieldType
-    isRequired: Boolean
+    contentTypeField: ContentTypeFieldInput!
   ): ContentTypeField!
   removeContentType(contentTypeName: String!): ContentType
   removeContentTypeField(fieldId: ID!): ContentTypeField
