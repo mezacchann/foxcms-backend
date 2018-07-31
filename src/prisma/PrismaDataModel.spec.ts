@@ -2,6 +2,7 @@ import { dataModels } from './dataModels.provider'
 import { PrismaDataModel } from './PrismaDataModel'
 import { Test } from '@nestjs/testing'
 import { readFileSync, writeFileSync } from 'fs'
+import ContentTypeField from '../content-type/ContentTypeField'
 
 describe('PrismaDataModel', () => {
   let prismaDataModel: PrismaDataModel
@@ -100,6 +101,32 @@ describe('PrismaDataModel', () => {
       expect(() =>
         prismaDataModel.addField('photo', 'width', 'String', true),
       ).toThrow()
+      expect(deployFn.mock.calls.length).toBe(2)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(2)
+    })
+  })
+
+  describe('Add a new fields to a content type', () => {
+    it('Should add new fields to a content type', () => {
+      prismaDataModel.addType('photo')
+      const contentTypeFields: ContentTypeField[] = new Array()
+      contentTypeFields.push(
+        new ContentTypeField('photo', 'width', 'Float', true),
+      )
+      contentTypeFields.push(
+        new ContentTypeField('photo', 'height', 'Float', true),
+      )
+      contentTypeFields.push(
+        new ContentTypeField('photo', 'size', 'Float', false),
+      )
+      contentTypeFields.push(
+        new ContentTypeField('photo', 'uri', 'String', true),
+      )
+      prismaDataModel.addFields(contentTypeFields)
+      const expectedContent = readFileSync(
+        './test/resources/contentTypes.addMultipleFields.graphql.txt',
+      )
+      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
       expect(deployFn.mock.calls.length).toBe(2)
       expect(updateRemoteModelFn.mock.calls.length).toBe(2)
     })

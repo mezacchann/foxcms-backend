@@ -11,6 +11,7 @@ import outdent from 'outdent'
 import { spawnSync } from 'child_process'
 import { request } from 'graphql-request'
 import { encode } from 'base-64'
+import ContentTypeField from '../content-type/ContentTypeField'
 @Injectable()
 export class PrismaDataModel {
   private readonly logger = new Logger(PrismaDataModel.name, true)
@@ -55,12 +56,27 @@ export class PrismaDataModel {
       throw new ConflictException(
         `Field ${fieldName} exists already within type ${contentTypeName}`,
       )
-    this.addFieldToDatamodel(
+    const newDatamodel = this.addFieldToDatamodel(
       contentTypeName,
       fieldName,
       this.customTypeToDataType[fieldType],
       isRequired,
     )
+    this.updateModel(newDatamodel)
+  }
+
+  addFields(contentTypeFields: ContentTypeField[]) {
+    let newDatamodel
+    contentTypeFields.forEach(contentTypeField => {
+      newDatamodel = this.addFieldToDatamodel(
+        contentTypeField.contentTypeName,
+        contentTypeField.fieldName,
+        this.customTypeToDataType[contentTypeField.fieldType],
+        contentTypeField.isRequired,
+      )
+      this.updateLocalModel(newDatamodel)
+    })
+    this.updateModel(newDatamodel)
   }
 
   private addTypeToDatamodel(typeName: string) {
@@ -99,7 +115,7 @@ export class PrismaDataModel {
     fieldName: string,
     fieldType: any,
     isRequired: boolean,
-  ) {
+  ): string {
     const matchedType = this.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0]
@@ -108,7 +124,7 @@ export class PrismaDataModel {
       this.content.slice(0, idx) +
       `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
       this.content.slice(idx)
-    this.updateModel(result)
+    return result
   }
 
   deleteType(contentTypeName: string) {
