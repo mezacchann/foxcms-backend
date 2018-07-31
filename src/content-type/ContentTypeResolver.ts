@@ -1,5 +1,5 @@
-import { Resolver, Query, Mutation } from '@nestjs/graphql';
-import { ContentTypeService } from './ContentTypeService';
+import { Resolver, Query, Mutation } from '@nestjs/graphql'
+import { ContentTypeService } from './ContentTypeService'
 
 @Resolver('ContentType')
 export class ContentTypeResolver {
@@ -7,7 +7,7 @@ export class ContentTypeResolver {
 
   @Mutation()
   addContentType(obj, { contentTypeName, description }, context, info) {
-    this.contentTypeService.addContentType(contentTypeName);
+    this.contentTypeService.addContentType(contentTypeName)
     return context.prisma.mutation.createContentType(
       {
         data: {
@@ -16,18 +16,18 @@ export class ContentTypeResolver {
         },
       },
       info,
-    );
+    )
   }
 
   @Mutation()
   async addContentTypeField(obj, args, context, info) {
-    const { contentTypeId, fieldName, fieldType, isRequired } = args;
+    const { contentTypeId, fieldName, fieldType, isRequired } = args
     await this.contentTypeService.addContentTypeField(
       contentTypeId,
       fieldName,
       fieldType,
       isRequired,
-    );
+    )
     return context.prisma.mutation.createContentTypeField(
       {
         data: {
@@ -42,13 +42,13 @@ export class ContentTypeResolver {
         },
       },
       info,
-    );
+    )
   }
 
   @Mutation()
   removeContentType(obj, args, context, info) {
-    const { contentTypeName } = args;
-    this.contentTypeService.deleteContentType(contentTypeName);
+    const { contentTypeName } = args
+    this.contentTypeService.deleteContentType(contentTypeName)
     return context.prisma.mutation.deleteContentType(
       {
         where: {
@@ -56,13 +56,13 @@ export class ContentTypeResolver {
         },
       },
       info,
-    );
+    )
   }
 
   @Mutation()
   async removeContentTypeField(obj, args, context, info) {
-    const { fieldId } = args;
-    this.contentTypeService.deleteContentTypeField(fieldId);
+    const { fieldId } = args
+    this.contentTypeService.deleteContentTypeField(fieldId)
     return context.prisma.mutation.deleteContentTypeField(
       {
         where: {
@@ -70,6 +70,6 @@ export class ContentTypeResolver {
         },
       },
       info,
-    );
+    )
   }
 }

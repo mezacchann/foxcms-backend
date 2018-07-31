@@ -1,11 +1,11 @@
-import { Module, Inject, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { graphiqlExpress } from 'apollo-server-express';
-import { GraphQLModule, GraphQLFactory } from '@nestjs/graphql';
-import { UserModule } from './user/UserModule';
-import { GraphQLSchema } from 'graphql';
-import { ContentTypeModule } from './content-type/ContentTypeModule';
-import { PrismaModule } from './prisma/PrismaModule';
-import { ApolloMiddleware } from './ApolloMiddleware';
+import { Module, Inject, MiddlewareConsumer, NestModule } from '@nestjs/common'
+import { graphiqlExpress } from 'apollo-server-express'
+import { GraphQLModule, GraphQLFactory } from '@nestjs/graphql'
+import { UserModule } from './user/UserModule'
+import { GraphQLSchema } from 'graphql'
+import { ContentTypeModule } from './content-type/ContentTypeModule'
+import { PrismaModule } from './prisma/PrismaModule'
+import { ApolloMiddleware } from './ApolloMiddleware'
 
 @Module({
   imports: [GraphQLModule, UserModule, ContentTypeModule, PrismaModule],
@@ -22,6 +22,6 @@ export class AppModule implements NestModule {
       .apply(graphiqlExpress({ endpointURL: '/graphql' }))
       .forRoutes('/graphi')
       .apply(ApolloMiddleware)
-      .forRoutes('/graphql');
+      .forRoutes('/graphql')
   }
 }

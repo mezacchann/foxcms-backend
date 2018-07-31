@@ -1,5 +1,5 @@
-import { Resolver, Query, Mutation } from '@nestjs/graphql';
-import { UserService } from './UserService';
+import { Resolver, Query, Mutation } from '@nestjs/graphql'
+import { UserService } from './UserService'
 
 @Resolver('User')
 export class UserResolver {
@@ -7,11 +7,11 @@ export class UserResolver {
 
   @Query('user')
   async getUser(obj, { id }, context, info) {
-    return await this.userService.find(Number(id));
+    return await this.userService.find(Number(id))
   }
 
   @Mutation()
   async createUser(_, { name }) {
-    return await this.userService.create(name);
+    return await this.userService.create(name)
   }
 }

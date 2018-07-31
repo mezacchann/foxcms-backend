@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { PrismaDataModel } from './../prisma/PrismaDataModel';
-import { request } from 'graphql-request';
+import { Injectable, Inject } from '@nestjs/common'
+import { PrismaDataModel } from './../prisma/PrismaDataModel'
+import { request } from 'graphql-request'
 
 @Injectable()
 export class ContentTypeService {
@@ -11,7 +11,7 @@ export class ContentTypeService {
   ) {}
 
   addContentType(contentTypeName: string) {
-    this.prismaDataModel.addType(contentTypeName);
+    this.prismaDataModel.addType(contentTypeName)
   }
 
   async addContentTypeField(
@@ -24,20 +24,20 @@ export class ContentTypeService {
       contentType(where: {id: "${contentTypeId}"}) {
         name
       }
-    }`;
+    }`
 
-    const queryResult = await request(this.prismaEndpoint, query);
-    const contentTypeName = (queryResult as any).contentType.name;
+    const queryResult = await request(this.prismaEndpoint, query)
+    const contentTypeName = (queryResult as any).contentType.name
     this.prismaDataModel.addField(
       contentTypeName,
       fieldName,
       fieldType,
       isRequired,
-    );
+    )
   }
 
   deleteContentType(contentTypeName: string) {
-    this.prismaDataModel.deleteType(contentTypeName);
+    this.prismaDataModel.deleteType(contentTypeName)
   }
 
   async deleteContentTypeField(fieldId: string) {
@@ -48,12 +48,12 @@ export class ContentTypeService {
           name
         }
       }
-    }`;
+    }`
 
-    const queryResult = (await request(this.prismaEndpoint, query)) as any;
+    const queryResult = (await request(this.prismaEndpoint, query)) as any
     this.prismaDataModel.deleteContentTypeField(
       queryResult.contentTypeFields[0].contentType.name,
       queryResult.contentTypeFields[0].name,
-    );
+    )
   }
 }
