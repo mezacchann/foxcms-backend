@@ -1,4 +1,11 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ConflictException,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { writeFileSync } from 'fs';
 import outdent from 'outdent';
 import { spawnSync } from 'child_process';
@@ -25,9 +32,11 @@ export class PrismaDataModel {
 
   addType(typeName: string) {
     if (this.typeExists(typeName))
-      throw new Error(`Type ${typeName} already exists`);
+      throw new ConflictException(`Type ${typeName} already exists`);
     if (/\s/.test(typeName))
-      throw new Error('Type name may not contain any whitespaces');
+      throw new NotAcceptableException(
+        'Type name may not contain any whitespaces',
+      );
     this.addTypeToDatamodel(typeName);
     this.logger.log(`Added and deployed new content type ${typeName}`);
   }
@@ -39,11 +48,11 @@ export class PrismaDataModel {
     isRequired: boolean,
   ) {
     if (!this.typeExists(contentTypeName))
-      throw new Error(
+      throw new NotFoundException(
         `Cannot add Field. Type ${contentTypeName} doesn't exist`,
       );
     if (this.fieldExistsWithinType(contentTypeName, fieldName))
-      throw new Error(
+      throw new ConflictException(
         `Field ${fieldName} exists already within type ${contentTypeName}`,
       );
     this.addFieldToDatamodel(
@@ -113,9 +122,9 @@ export class PrismaDataModel {
 
   deleteContentTypeField(contentTypeName: string, fieldName: string) {
     if (!this.typeExists(contentTypeName))
-      throw new Error(`Type ${contentTypeName} doesn't exists`);
+      throw new NotFoundException(`Type ${contentTypeName} doesn't exists`);
     if (!this.fieldExistsWithinType(contentTypeName, fieldName))
-      throw new Error(
+      throw new NotFoundException(
         `Field ${fieldName} doesn't exist within type ${contentTypeName}`,
       );
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`);
