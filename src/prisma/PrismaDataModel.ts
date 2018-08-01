@@ -24,6 +24,7 @@ export class PrismaDataModel {
     Date: 'DateTime',
     Json: 'Json',
   }
+  private datamodelCache: string
 
   constructor(
     @Inject('DynamicModel') private content: string,
@@ -32,12 +33,14 @@ export class PrismaDataModel {
   ) {}
 
   addType(typeName: string) {
-    if (this.typeExists(typeName))
+    if (this.typeExists(typeName)) {
       throw new ConflictException(`Type ${typeName} already exists`)
-    if (/\s/.test(typeName))
+    }
+    if (/\s/.test(typeName)) {
       throw new NotAcceptableException(
         'Type name may not contain any whitespaces',
       )
+    }
     this.addTypeToDatamodel(typeName)
     this.logger.log(`Added and deployed new content type ${typeName}`)
   }
@@ -67,7 +70,29 @@ export class PrismaDataModel {
 
   addFields(contentTypeFields: ContentTypeField[]) {
     let newDatamodel
+    this.datamodelCache = String(this.content)
     contentTypeFields.forEach(contentTypeField => {
+      if (!this.typeExists(contentTypeField.contentTypeName)) {
+        this.updateLocalModel(this.datamodelCache)
+        throw new NotFoundException(
+          `Cannot add Field. Type ${
+            contentTypeField.contentTypeName
+          } doesn't exist`,
+        )
+      }
+      if (
+        this.fieldExistsWithinType(
+          contentTypeField.contentTypeName,
+          contentTypeField.fieldName,
+        )
+      ) {
+        this.updateLocalModel(this.datamodelCache)
+        throw new ConflictException(
+          `Field ${contentTypeField.fieldName} exists already within type ${
+            contentTypeField.contentTypeName
+          }`,
+        )
+      }
       newDatamodel = this.addFieldToDatamodel(
         contentTypeField.contentTypeName,
         contentTypeField.fieldName,
@@ -89,9 +114,9 @@ export class PrismaDataModel {
   }
 
   private updateModel(content: string) {
+    this.deploy()
     this.updateRemoteModel(content)
     this.updateLocalModel(content)
-    this.deploy()
   }
 
   private updateLocalModel(content: string) {
@@ -167,6 +192,6 @@ export class PrismaDataModel {
   }
 
   deploy() {
-    spawnSync('node_modules/.bin/prisma', ['deploy', 'f'])
+    const res = spawnSync('node_modules/.bin/prisma', ['deploy', 'f'])
   }
 }

@@ -6,8 +6,8 @@ import ContentTypeField from '../content-type/ContentTypeField'
 
 describe('PrismaDataModel', () => {
   let prismaDataModel: PrismaDataModel
-  let deployFn: jest.Mock<T>
-  let updateRemoteModelFn: jest.Mock<T>
+  let deployFn: jest.Mock
+  let updateRemoteModelFn: jest.Mock
   const contentTypeDataModelPath = './test/resources/contentTypes.graphql.txt'
   let initialDatamodelContent: Buffer
 
@@ -110,18 +110,30 @@ describe('PrismaDataModel', () => {
     it('Should add new fields to a content type', () => {
       prismaDataModel.addType('photo')
       const contentTypeFields: ContentTypeField[] = new Array()
-      contentTypeFields.push(
-        new ContentTypeField('photo', 'width', 'Float', true),
-      )
-      contentTypeFields.push(
-        new ContentTypeField('photo', 'height', 'Float', true),
-      )
-      contentTypeFields.push(
-        new ContentTypeField('photo', 'size', 'Float', false),
-      )
-      contentTypeFields.push(
-        new ContentTypeField('photo', 'uri', 'String', true),
-      )
+      contentTypeFields.push({
+        contentTypeName: 'photo',
+        fieldName: 'width',
+        fieldType: 'Float',
+        isRequired: true,
+      })
+      contentTypeFields.push({
+        contentTypeName: 'photo',
+        fieldName: 'height',
+        fieldType: 'Float',
+        isRequired: true,
+      })
+      contentTypeFields.push({
+        contentTypeName: 'photo',
+        fieldName: 'size',
+        fieldType: 'Float',
+        isRequired: false,
+      })
+      contentTypeFields.push({
+        contentTypeName: 'photo',
+        fieldName: 'uri',
+        fieldType: 'String',
+        isRequired: true,
+      })
       prismaDataModel.addFields(contentTypeFields)
       const expectedContent = readFileSync(
         './test/resources/contentTypes.addMultipleFields.graphql.txt',

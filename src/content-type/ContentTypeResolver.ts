@@ -1,5 +1,9 @@
 import { Resolver, Query, Mutation } from '@nestjs/graphql'
 import { ContentTypeService } from './ContentTypeService'
+import {
+  NotAcceptableException,
+  ConflictException,
+} from '../../node_modules/@nestjs/common'
 
 @Resolver('ContentType')
 export class ContentTypeResolver {
@@ -21,7 +25,12 @@ export class ContentTypeResolver {
 
   @Mutation()
   async addContentTypeField(obj, args, context, info) {
-    const { contentTypeId, fieldName, fieldType, isRequired } = args
+    const {
+      contentTypeId,
+      fieldName,
+      fieldType,
+      isRequired,
+    } = args.contentTypeField
     await this.contentTypeService.addContentTypeField(
       contentTypeId,
       fieldName,
@@ -43,6 +52,53 @@ export class ContentTypeResolver {
       },
       info,
     )
+  }
+
+  @Mutation()
+  async addContentTypeFields(obj, args, context, info) {
+    const { contentTypeFields } = args
+    const newContentTypeFields: any[] = new Array()
+
+    if (!this.contentTypeService.fieldsAreWithinSameType(contentTypeFields)) {
+      throw new NotAcceptableException(
+        'All content type fields must belong to the same content type',
+      )
+    }
+    if (this.contentTypeService.fieldsWithDuplicateNames(contentTypeFields)) {
+      throw new ConflictException(
+        'Content type may not contain fields with the same name',
+      )
+    }
+
+    await this.contentTypeService.addContentTypeFields(contentTypeFields)
+    args.contentTypeFields.forEach(contentTypeField => {
+      const {
+        contentTypeId,
+        fieldName,
+        fieldType,
+        isRequired,
+      } = contentTypeField
+
+      newContentTypeFields.push(
+        context.prisma.mutation.createContentTypeField(
+          {
+            data: {
+              contentType: {
+                connect: {
+                  id: contentTypeId,
+                },
+              },
+              name: fieldName,
+              type: fieldType,
+              isRequired,
+            },
+          },
+          info,
+        ),
+      )
+    })
+
+    return newContentTypeFields
   }
 
   @Mutation()

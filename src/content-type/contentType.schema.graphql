@@ -10,6 +10,9 @@ type Mutation {
   addContentTypeField(
     contentTypeField: ContentTypeFieldInput!
   ): ContentTypeField!
+  addContentTypeFields(
+    contentTypeFields: [ContentTypeFieldInput]!
+  ): [ContentTypeField]!
   removeContentType(contentTypeName: String!): ContentType
   removeContentTypeField(fieldId: ID!): ContentTypeField
 }
