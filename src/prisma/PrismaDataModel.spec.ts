@@ -1,28 +1,16 @@
-import { dataModels } from './dataModels.provider'
 import { PrismaDataModel } from './PrismaDataModel'
 import { Test } from '@nestjs/testing'
-import { readFileSync, writeFileSync } from 'fs'
 import ContentTypeField from '../content-type/ContentTypeField'
 
 describe('PrismaDataModel', () => {
   let prismaDataModel: PrismaDataModel
   let deployFn: jest.Mock
   let updateRemoteModelFn: jest.Mock
-  const contentTypeDataModelPath = './test/resources/contentTypes.graphql.txt'
-  let initialDatamodelContent: Buffer
-
-  beforeAll(() => {
-    initialDatamodelContent = readFileSync(contentTypeDataModelPath)
-  })
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         PrismaDataModel,
-        {
-          provide: 'DynamicModelPath',
-          useValue: contentTypeDataModelPath,
-        },
         {
           provide: 'ContentTypesDatamodel',
           useValue: '',
@@ -50,10 +38,7 @@ describe('PrismaDataModel', () => {
   describe('Add a new content type to the data model', () => {
     it('Should add a new type to the data model', () => {
       prismaDataModel.addType('photo')
-      const expectedContent = readFileSync(
-        './test/resources/contentTypes.addType.graphql.txt',
-      )
-      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
+      expect(prismaDataModel.getContent()).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(1)
       expect(updateRemoteModelFn.mock.calls.length).toBe(1)
     })
@@ -99,10 +84,7 @@ describe('PrismaDataModel', () => {
         fieldType: 'String',
         isRequired: true,
       })
-      const expectedContent = readFileSync(
-        './test/resources/contentTypes.addField.graphql.txt',
-      )
-      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
+      expect(prismaDataModel.getContent()).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(5)
       expect(updateRemoteModelFn.mock.calls.length).toBe(5)
     })
@@ -170,10 +152,7 @@ describe('PrismaDataModel', () => {
         isRequired: true,
       })
       prismaDataModel.addFields(contentTypeFields)
-      const expectedContent = readFileSync(
-        './test/resources/contentTypes.addMultipleFields.graphql.txt',
-      )
-      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
+      expect(prismaDataModel.getContent()).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(2)
       expect(updateRemoteModelFn.mock.calls.length).toBe(2)
     })
@@ -185,10 +164,7 @@ describe('PrismaDataModel', () => {
       prismaDataModel.addType('photo2')
       prismaDataModel.addType('photo3')
       prismaDataModel.deleteType('photo2')
-      const expectedContent = readFileSync(
-        './test/resources/contentTypes.deleteType.graphql.txt',
-      )
-      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
+      expect(prismaDataModel.getContent()).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(4)
       expect(updateRemoteModelFn.mock.calls.length).toBe(4)
     })
@@ -230,10 +206,7 @@ describe('PrismaDataModel', () => {
       })
       prismaDataModel.deleteContentTypeField('photo', 'height')
       prismaDataModel.deleteContentTypeField('photo', 'width')
-      const expectedContent = readFileSync(
-        './test/resources/contentTypes.deleteField.graphql.txt',
-      )
-      expect(prismaDataModel.getContent()).toBe(expectedContent.toString())
+      expect(prismaDataModel.getContent()).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(7)
       expect(updateRemoteModelFn.mock.calls.length).toBe(7)
     })
@@ -272,9 +245,5 @@ describe('PrismaDataModel', () => {
       expect(deployFn.mock.calls.length).toBe(6)
       expect(updateRemoteModelFn.mock.calls.length).toBe(6)
     })
-  })
-
-  afterEach(() => {
-    writeFileSync(contentTypeDataModelPath, initialDatamodelContent)
   })
 })

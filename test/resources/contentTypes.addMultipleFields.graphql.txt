@@ -1,7 +1,0 @@
-type photo {
-  id: ID! @unique
-  width: Float!
-  height: Float!
-  size: Float
-  uri: String!
-}

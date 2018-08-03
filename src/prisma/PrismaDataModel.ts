@@ -2,7 +2,6 @@ import {
   Injectable,
   Inject,
 } from '@nestjs/common'
-import outdent from 'outdent'
 import { spawnSync } from 'child_process'
 import { request } from 'graphql-request'
 import { encode } from 'base-64'
@@ -24,8 +23,8 @@ export class PrismaDataModel {
 
   private validator: Validator
   constructor(
-    @Inject('DynamicModel') private model: Model,
     @Inject('PrismaEndpoint') private prismaEndpoint: string,
+    @Inject('DynamicModel') private model: Model,
   ) {
     this.validator = new Validator(model)
   }
@@ -71,11 +70,7 @@ export class PrismaDataModel {
   }
 
   private addTypeToDatamodel(typeName: string) {
-    const typeTemplate = outdent`
-    type ${typeName} {
-      id: ID! @unique
-    }`
-    if (this.model.content !== '') this.model.content += '\n'
+    const typeTemplate = `type ${typeName} {id: ID! @unique}`
     this.updateModel(this.model.content + typeTemplate)
   }
 
@@ -108,7 +103,7 @@ export class PrismaDataModel {
     const idx = this.model.content.indexOf(matchedType) + matchedType.length
     const result =
       this.model.content.slice(0, idx) +
-      `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
+      ` ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
       this.model.content.slice(idx)
     return result
   }

@@ -1,3 +1,0 @@
-type photo {
-  id: ID! @unique
-}
