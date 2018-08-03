@@ -29,7 +29,7 @@ describe('PrismaDataModel', () => {
         },
         {
           provide: 'DynamicModel',
-          useValue: '',
+          useValue: { content: '' },
         },
         {
           provide: 'PrismaEndpoint',

@@ -26,7 +26,7 @@ export const dataModels = [
       } else {
         const modelContent = decode(queryResult.configuration.value)
         writeFile(dynamicModelPath, modelContent)
-        return modelContent
+        return { content: modelContent }
       }
       return ''
     },

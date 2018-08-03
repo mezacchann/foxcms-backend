@@ -1,18 +1,14 @@
 import {
   Injectable,
   Inject,
-  Logger,
-  ConflictException,
-  NotAcceptableException,
-  NotFoundException,
 } from '@nestjs/common'
-import { writeFileSync } from 'fs'
 import outdent from 'outdent'
 import { spawnSync } from 'child_process'
 import { request } from 'graphql-request'
 import { encode } from 'base-64'
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
+import Model from './Model';
 
 @Injectable()
 export class PrismaDataModel {
@@ -25,24 +21,23 @@ export class PrismaDataModel {
     Date: 'DateTime',
     Json: 'Json',
   }
-  private datamodelCache: string
 
+  private validator: Validator
   constructor(
-    @Inject('DynamicModel') private content: string,
+    @Inject('DynamicModel') private model: Model,
     @Inject('PrismaEndpoint') private prismaEndpoint: string,
-    @Inject('DynamicModelPath') private contentTypeDataModelPath: string,
-  ) {}
+  ) {
+    this.validator = new Validator(model)
+  }
 
   addType(typeName: string) {
-    const validator = new Validator(this.content)
-    validator.isTypeCreatable(typeName)
+    this.validator.isTypeCreatable(typeName)
     this.addTypeToDatamodel(typeName)
   }
 
   addField(field: ContentTypeField) {
-    const validator = new Validator(this.content)
     const { contentTypeName, fieldName, fieldType, isRequired } = field
-    validator.isFieldCreatable(contentTypeName, fieldName)
+    this.validator.isFieldCreatable(contentTypeName, fieldName)
     const newDatamodel = this.addFieldToDatamodel({
       contentTypeName,
       fieldName,
@@ -54,8 +49,6 @@ export class PrismaDataModel {
 
   addFields(contentTypeFields: ContentTypeField[]) {
     let newDatamodel
-    this.datamodelCache = String(this.content)
-    const validator = new Validator(this.content)
     contentTypeFields.forEach(contentTypeField => {
       const {
         contentTypeName,
@@ -64,7 +57,7 @@ export class PrismaDataModel {
         isRequired,
       } = contentTypeField
 
-      validator.isFieldCreatable(contentTypeName, fieldName)
+      this.validator.isFieldCreatable(contentTypeName, fieldName)
 
       newDatamodel = this.addFieldToDatamodel({
         contentTypeName,
@@ -82,8 +75,8 @@ export class PrismaDataModel {
     type ${typeName} {
       id: ID! @unique
     }`
-    if (this.content !== '') this.content += '\n'
-    this.updateModel(this.content + typeTemplate)
+    if (this.model.content !== '') this.model.content += '\n'
+    this.updateModel(this.model.content + typeTemplate)
   }
 
   private updateModel(content: string) {
@@ -93,8 +86,7 @@ export class PrismaDataModel {
   }
 
   private updateLocalModel(content: string) {
-    this.content = content
-    writeFileSync(this.contentTypeDataModelPath, content)
+    this.model.content = content
   }
 
   private async updateRemoteModel(content: string) {
@@ -110,38 +102,36 @@ export class PrismaDataModel {
 
   private addFieldToDatamodel(field: ContentTypeField): string {
     const { contentTypeName, fieldName, fieldType, isRequired } = field
-    const matchedType = this.content.match(
+    const matchedType = this.model.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0]
-    const idx = this.content.indexOf(matchedType) + matchedType.length
+    const idx = this.model.content.indexOf(matchedType) + matchedType.length
     const result =
-      this.content.slice(0, idx) +
+      this.model.content.slice(0, idx) +
       `  ${fieldName}: ${fieldType}${isRequired ? '!' : ''}\n` +
-      this.content.slice(idx)
+      this.model.content.slice(idx)
     return result
   }
 
   deleteType(contentTypeName: string) {
-    const validator = new Validator(this.content)
-    validator.isTypeDeletable(contentTypeName)
+    this.validator.isTypeDeletable(contentTypeName)
     const regex = new RegExp(`type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`)
-    this.updateModel(this.content.replace(regex, ''))
+    this.updateModel(this.model.content.replace(regex, ''))
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string) {
-    const validator = new Validator(this.content)
-    validator.isFieldDeletable(contentTypeName, fieldName)
+    this.validator.isFieldDeletable(contentTypeName, fieldName)
     const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`)
-    const matchedContent = this.content.match(regex)[0]
+    const matchedContent = this.model.content.match(regex)[0]
     const typeWithRemovedField = matchedContent.replace(
       new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
       '',
     )
-    this.updateModel(this.content.replace(matchedContent, typeWithRemovedField))
+    this.updateModel(this.model.content.replace(matchedContent, typeWithRemovedField))
   }
 
   getContent(): string {
-    return this.content
+    return this.model.content
   }
 
   deploy() {
