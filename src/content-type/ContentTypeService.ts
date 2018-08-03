@@ -22,12 +22,12 @@ export class ContentTypeService {
     isRequired: boolean,
   ) {
     const contentTypeName = await this.resolveContentTypeName(contentTypeId)
-    this.prismaDataModel.addField(
+    this.prismaDataModel.addField({
       contentTypeName,
       fieldName,
       fieldType,
       isRequired,
-    )
+    })
   }
 
   private async resolveContentTypeName(contentTypeId: number) {
