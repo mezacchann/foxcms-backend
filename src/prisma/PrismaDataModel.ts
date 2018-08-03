@@ -39,20 +39,16 @@ export class PrismaDataModel {
     this.addTypeToDatamodel(typeName)
   }
 
-  addField(
-    contentTypeName: string,
-    fieldName: string,
-    fieldType: any,
-    isRequired: boolean,
-  ) {
+  addField(field: ContentTypeField) {
     const validator = new Validator(this.content)
+    const { contentTypeName, fieldName, fieldType, isRequired } = field
     validator.isFieldCreatable(contentTypeName, fieldName)
-    const newDatamodel = this.addFieldToDatamodel(
+    const newDatamodel = this.addFieldToDatamodel({
       contentTypeName,
       fieldName,
-      this.customTypeToDataType[fieldType],
+      fieldType: this.customTypeToDataType[fieldType],
       isRequired,
-    )
+    })
     this.updateModel(newDatamodel)
   }
 
@@ -61,17 +57,21 @@ export class PrismaDataModel {
     this.datamodelCache = String(this.content)
     const validator = new Validator(this.content)
     contentTypeFields.forEach(contentTypeField => {
-      validator.isFieldCreatable(
-        contentTypeField.contentTypeName,
-        contentTypeField.fieldName,
-      )
+      const {
+        contentTypeName,
+        fieldName,
+        fieldType,
+        isRequired,
+      } = contentTypeField
 
-      newDatamodel = this.addFieldToDatamodel(
-        contentTypeField.contentTypeName,
-        contentTypeField.fieldName,
-        this.customTypeToDataType[contentTypeField.fieldType],
-        contentTypeField.isRequired,
-      )
+      validator.isFieldCreatable(contentTypeName, fieldName)
+
+      newDatamodel = this.addFieldToDatamodel({
+        contentTypeName,
+        fieldName,
+        fieldType,
+        isRequired,
+      })
       this.updateLocalModel(newDatamodel)
     })
     this.updateModel(newDatamodel)
@@ -108,12 +108,8 @@ export class PrismaDataModel {
     await request(this.prismaEndpoint, query)
   }
 
-  private addFieldToDatamodel(
-    contentTypeName: string,
-    fieldName: string,
-    fieldType: any,
-    isRequired: boolean,
-  ): string {
+  private addFieldToDatamodel(field: ContentTypeField): string {
+    const { contentTypeName, fieldName, fieldType, isRequired } = field
     const matchedType = this.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0]
