@@ -106,7 +106,7 @@ describe('PrismaDataModel', () => {
     })
   })
 
-  describe('Add a new fields to a content type', () => {
+  describe('Add new fields to a content type', () => {
     it('Should add new fields to a content type', () => {
       prismaDataModel.addType('photo')
       const contentTypeFields: ContentTypeField[] = new Array()
