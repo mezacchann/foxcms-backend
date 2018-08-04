@@ -48,22 +48,6 @@ export class PrismaDataModel {
     return this.updateModel(newDatamodel)
   }
 
-  private updateModel(content: string): string {
-    this.deploy()
-    this.updateRemoteModel(content)
-    this.model.content = content
-    return content
-  }
-
-  private async updateRemoteModel(content: string) {
-    const query = `mutation {
-      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${content}"}) {
-        value
-      }
-    }`
-    await request(this.prismaEndpoint, query)
-  }
-
   private addFieldToModel(field: ContentTypeField): string {
     const { contentTypeName, fieldName, fieldType, isRequired } = field
     this.validator.isFieldCreatable(contentTypeName, fieldName)
@@ -97,7 +81,37 @@ export class PrismaDataModel {
     )
   }
 
-  deploy() {
-    const res = spawnSync('node_modules/.bin/prisma', ['deploy', 'f'])
+  private updateModel(model: string): string {
+    this.updateRemoteModel(model)
+    this.deploy(model)
+    this.model.content = model
+    return model
+  }
+
+  private async updateRemoteModel(model: string) {
+    const mutation = `mutation {
+      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${model}"}) {
+        value
+      }
+    }`
+    await request(this.prismaEndpoint, mutation)
+  }
+
+  async deploy(model: string) {
+    const mutation = `
+    mutation {
+      deploy(
+        input: {
+          name: "foxcms"
+          stage: "dev"
+          types: "${model}"
+        }
+      ) {
+        errors {
+          description
+        }
+      }
+    }`
+    await request('http://149.28.183.222:4466/management', mutation)
   }
 }
