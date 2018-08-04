@@ -122,41 +122,6 @@ describe('PrismaDataModel', () => {
     })
   })
 
-  describe('Add new fields to a content type', () => {
-    it('Should add new fields to a content type', () => {
-      prismaDataModel.addType('photo')
-      const contentTypeFields: ContentTypeField[] = new Array()
-      contentTypeFields.push({
-        contentTypeName: 'photo',
-        fieldName: 'width',
-        fieldType: 'Float',
-        isRequired: true,
-      })
-      contentTypeFields.push({
-        contentTypeName: 'photo',
-        fieldName: 'height',
-        fieldType: 'Float',
-        isRequired: true,
-      })
-      contentTypeFields.push({
-        contentTypeName: 'photo',
-        fieldName: 'size',
-        fieldType: 'Float',
-        isRequired: false,
-      })
-      contentTypeFields.push({
-        contentTypeName: 'photo',
-        fieldName: 'uri',
-        fieldType: 'String',
-        isRequired: true,
-      })
-      const result = prismaDataModel.addFields(contentTypeFields)
-      expect(result).toMatchSnapshot()
-      expect(deployFn.mock.calls.length).toBe(2)
-      expect(updateRemoteModelFn.mock.calls.length).toBe(2)
-    })
-  })
-
   describe('Delete a content type from the data model', () => {
     it('Delete the content type from the data model', () => {
       prismaDataModel.addType('photo')

@@ -46,40 +46,6 @@ export class ContentTypeService {
     return contentTypeName
   }
 
-  async addContentTypeFields(contentTypeFields: ContentTypeField[]) {
-    const contentTypeName = await this.resolveContentTypeName(
-      contentTypeFields[0].contentTypeId,
-    )
-    const fieldsWithName = contentTypeFields.map(field => ({
-      contentTypeName,
-      ...field,
-    }))
-    this.prismaDataModel.addFields(fieldsWithName)
-  }
-
-  fieldsAreWithinSameType(contentTypeFields: ContentTypeField[]): boolean {
-    let result = true
-    const contentTypeId = contentTypeFields[0].contentTypeId
-    contentTypeFields.forEach(field => {
-      if (field.contentTypeId !== contentTypeId) {
-        result = false
-      }
-    })
-    return result
-  }
-
-  fieldsWithDuplicateNames(contentTypeFields: ContentTypeField[]): boolean {
-    let result = false
-    const fieldNames: string[] = new Array()
-    contentTypeFields.forEach(field => {
-      if (fieldNames.indexOf(field.fieldName) !== -1) {
-        result = true
-      }
-      fieldNames.push(field.fieldName)
-    })
-    return result
-  }
-
   deleteContentType(contentTypeName: string) {
     this.prismaDataModel.deleteType(contentTypeName)
   }

@@ -39,15 +39,6 @@ export class PrismaDataModel {
     return this.updateModel(newDatamodel)
   }
 
-  addFields(contentTypeFields: ContentTypeField[]): string {
-    let newDatamodel
-    contentTypeFields.forEach(contentTypeField => {
-      newDatamodel = this.addFieldToModel(contentTypeField)
-      this.model.content = newDatamodel
-    })
-    return this.updateModel(newDatamodel)
-  }
-
   private addFieldToModel(field: ContentTypeField): string {
     const { contentTypeName, fieldName, fieldType, isRequired } = field
     this.validator.isFieldCreatable(contentTypeName, fieldName)
