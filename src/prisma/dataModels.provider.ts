@@ -1,10 +1,7 @@
 import * as util from 'util'
 import * as fs from 'fs'
 import { request } from 'graphql-request'
-import { decode } from 'base-64'
 
-const readFile = util.promisify(fs.readFile)
-const writeFile = util.promisify(fs.writeFile)
 export const dataModels = [
   {
     provide: 'DynamicModel',
@@ -16,16 +13,18 @@ export const dataModels = [
         }`
       const queryResult = (await request(prismaEndpoint, query)) as any
       if (queryResult.configuration === null) {
+        const datamodel = fs
+          .readFileSync('./prisma/datamodel.graphql', 'utf-8')
+          .replace(/\r?\n|\r/g, '')
         const mutation = `mutation {
-          createConfiguration(data: {name: "dynamicModel", value: ""}) {
+          createConfiguration(data: {name: "dynamicModel", value: "${datamodel}"}) {
             name
           }
         }
         `
         await request(prismaEndpoint, mutation)
       } else {
-        const modelContent = decode(queryResult.configuration.value)
-        writeFile(dynamicModelPath, modelContent)
+        const modelContent = queryResult.configuration.value
         return { content: modelContent }
       }
       return ''

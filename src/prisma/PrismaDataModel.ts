@@ -4,7 +4,6 @@ import {
 } from '@nestjs/common'
 import { spawnSync } from 'child_process'
 import { request } from 'graphql-request'
-import { encode } from 'base-64'
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
 import Model from './Model';
@@ -86,9 +85,7 @@ export class PrismaDataModel {
 
   private async updateRemoteModel(content: string) {
     const query = `mutation {
-      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${encode(
-        content,
-      )}"}) {
+      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${content}"}) {
         value
       }
     }`
