@@ -37,8 +37,7 @@ describe('PrismaDataModel', () => {
 
   describe('Add a new content type to the data model', () => {
     it('Should add a new type to the data model', () => {
-      prismaDataModel.addType('photo')
-      expect(prismaDataModel.getContent()).toMatchSnapshot()
+      expect(prismaDataModel.addType('photo')).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(1)
       expect(updateRemoteModelFn.mock.calls.length).toBe(1)
     })
@@ -78,13 +77,13 @@ describe('PrismaDataModel', () => {
         fieldType: 'Float',
         isRequired: false,
       })
-      prismaDataModel.addField({
+      const result = prismaDataModel.addField({
         contentTypeName: 'photo',
         fieldName: 'uri',
         fieldType: 'String',
         isRequired: true,
       })
-      expect(prismaDataModel.getContent()).toMatchSnapshot()
+      expect(result).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(5)
       expect(updateRemoteModelFn.mock.calls.length).toBe(5)
     })
@@ -151,8 +150,8 @@ describe('PrismaDataModel', () => {
         fieldType: 'String',
         isRequired: true,
       })
-      prismaDataModel.addFields(contentTypeFields)
-      expect(prismaDataModel.getContent()).toMatchSnapshot()
+      const result = prismaDataModel.addFields(contentTypeFields)
+      expect(result).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(2)
       expect(updateRemoteModelFn.mock.calls.length).toBe(2)
     })
@@ -163,8 +162,8 @@ describe('PrismaDataModel', () => {
       prismaDataModel.addType('photo')
       prismaDataModel.addType('photo2')
       prismaDataModel.addType('photo3')
-      prismaDataModel.deleteType('photo2')
-      expect(prismaDataModel.getContent()).toMatchSnapshot()
+      const result = prismaDataModel.deleteType('photo2')
+      expect(result).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(4)
       expect(updateRemoteModelFn.mock.calls.length).toBe(4)
     })
@@ -205,8 +204,8 @@ describe('PrismaDataModel', () => {
         isRequired: true,
       })
       prismaDataModel.deleteContentTypeField('photo', 'height')
-      prismaDataModel.deleteContentTypeField('photo', 'width')
-      expect(prismaDataModel.getContent()).toMatchSnapshot()
+      const result = prismaDataModel.deleteContentTypeField('photo', 'width')
+      expect(result).toMatchSnapshot()
       expect(deployFn.mock.calls.length).toBe(7)
       expect(updateRemoteModelFn.mock.calls.length).toBe(7)
     })
