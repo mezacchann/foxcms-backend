@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { spawnSync } from 'child_process'
 import { request } from 'graphql-request'
+import * as url from 'url'
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
 import Model from './Model'
@@ -103,6 +103,7 @@ export class PrismaDataModel {
         }
       }
     }`
-    await request('http://149.28.183.222:4466/management', mutation)
+    const prismaEndpointUrl = url.parse(this.prismaEndpoint)
+    await request(`${prismaEndpointUrl.host}/management`, mutation)
   }
 }
