@@ -10,6 +10,7 @@ type Mutation {
   addContentTypeField(
     contentTypeField: ContentTypeFieldInput!
   ): ContentTypeField!
-  removeContentType(contentTypeName: String!): ContentType
+  renewContentType(contentTypeId: ID!, name: String!, description: String!): ContentType!
+  removeContentType(contentTypeId: ID!): ContentType
   removeContentTypeField(fieldId: ID!): ContentTypeField
 }

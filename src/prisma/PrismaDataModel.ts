@@ -72,6 +72,15 @@ export class PrismaDataModel {
     )
   }
 
+  updateContentTypeName(oldTypeName: string, newTypeName: string): string {
+    this.validator.isTypeUpdatable(oldTypeName, newTypeName)
+    const newModel = this.model.content.replace(
+      `type ${oldTypeName}`,
+      `type ${newTypeName}`,
+    )
+    return this.updateModel(newModel)
+  }
+
   private updateModel(model: string): string {
     this.deploy(model)
     this.updateRemoteModel(model)

@@ -1,4 +1,4 @@
-import Model from './Model';
+import Model from './Model'
 
 export class Validator {
   private readonly model: Model
@@ -15,6 +15,19 @@ export class Validator {
       throw new Error('Type name may not contain any whitespaces')
     }
     if (/^\d/.test(typeName)) {
+      throw new Error('Type name must start with a letter')
+    }
+    return true
+  }
+
+  isTypeUpdatable(oldTypeName: string, newTypeName: string): boolean {
+    if (!this.typeExists(oldTypeName)) {
+      throw new Error(`Type ${oldTypeName} doesn't exists`)
+    }
+    if (/\s/.test(newTypeName)) {
+      throw new Error('Type name may not contain any whitespaces')
+    }
+    if (/^\d/.test(newTypeName)) {
       throw new Error('Type name must start with a letter')
     }
     return true

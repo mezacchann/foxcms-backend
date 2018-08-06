@@ -7,3 +7,5 @@ exports[`PrismaDataModel Add a new field to a content type Should add new fields
 exports[`PrismaDataModel Delete a content type field from the data model Delete a content type field from the data model 1`] = `"type photo {id: ID! @unique width: Float! height: Float! size: Float uri: String!}"`;
 
 exports[`PrismaDataModel Delete a content type from the data model Delete the content type from the data model 1`] = `"type photo {id: ID! @unique}type photo2 {id: ID! @unique}type photo3 {id: ID! @unique}"`;
+
+exports[`PrismaDataModel Update a content type Update the content type name 1`] = `"type photo {id: ID! @unique}type photo2_NEWNAME {id: ID! @unique}type photo3 {id: ID! @unique}"`;

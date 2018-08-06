@@ -175,6 +175,25 @@ describe('PrismaDataModel', () => {
     })
   })
 
+  describe('Update a content type', () => {
+    it('Update the content type name', () => {
+      prismaDataModel.addType('photo')
+      prismaDataModel.addType('photo2')
+      prismaDataModel.addType('photo3')
+      const result = prismaDataModel.updateContentTypeName('photo2', 'photo2_NEWNAME')
+      expect(result).toMatchSnapshot()
+      expect(deployFn.mock.calls.length).toBe(4)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(4)
+    })
+
+    it('Should throw an error when deleting an not existent content type', () => {
+      prismaDataModel.addType('photo')
+      expect(() => prismaDataModel.deleteType('photo2')).toThrow()
+      expect(deployFn.mock.calls.length).toBe(1)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(1)
+    })
+  })
+
   describe('Delete a content type field from the data model', () => {
     it('Delete a content type field from the data model', () => {
       prismaDataModel.addType('photo')

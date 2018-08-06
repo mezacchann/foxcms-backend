@@ -1,9 +1,5 @@
 import { Resolver, Query, Mutation } from '@nestjs/graphql'
 import { ContentTypeService } from './ContentTypeService'
-import {
-  NotAcceptableException,
-  ConflictException,
-} from '../../node_modules/@nestjs/common'
 
 @Resolver('ContentType')
 export class ContentTypeResolver {
@@ -55,13 +51,13 @@ export class ContentTypeResolver {
   }
 
   @Mutation()
-  removeContentType(obj, args, context, info) {
-    const { contentTypeName } = args
-    this.contentTypeService.deleteContentType(contentTypeName)
+  async removeContentType(obj, args, context, info) {
+    const { contentTypeId } = args
+    await this.contentTypeService.deleteContentType(contentTypeId)
     return context.prisma.mutation.deleteContentType(
       {
         where: {
-          name: contentTypeName,
+          id: contentTypeId,
         },
       },
       info,
@@ -71,11 +67,33 @@ export class ContentTypeResolver {
   @Mutation()
   async removeContentTypeField(obj, args, context, info) {
     const { fieldId } = args
-    this.contentTypeService.deleteContentTypeField(fieldId)
+    await this.contentTypeService.deleteContentTypeField(fieldId)
     return context.prisma.mutation.deleteContentTypeField(
       {
         where: {
           id: fieldId,
+        },
+      },
+      info,
+    )
+  }
+
+  @Mutation()
+  async renewContentType(obj, args, context, info) {
+    const { contentTypeId, name, description } = args
+    await this.contentTypeService.updateContentType(
+      contentTypeId,
+      name,
+      description,
+    )
+    return context.prisma.mutation.updateContentType(
+      {
+        where: {
+          id: contentTypeId,
+        },
+        data: {
+          name,
+          description,
         },
       },
       info,

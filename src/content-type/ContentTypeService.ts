@@ -1,7 +1,6 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common'
+import { Injectable, Inject } from '@nestjs/common'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { request } from 'graphql-request'
-import ContentTypeField from './ContentTypeField'
 
 @Injectable()
 export class ContentTypeService {
@@ -38,16 +37,26 @@ export class ContentTypeService {
     }`
     const queryResult = await request(this.prismaEndpoint, query)
     if ((queryResult as any).contentType == null) {
-      throw new NotFoundException(
-        `Content type with id ${contentTypeId} is not existing`,
-      )
+      throw new Error(`Content type with id ${contentTypeId} is not existing`)
     }
     const contentTypeName = (queryResult as any).contentType.name
     return contentTypeName
   }
 
-  deleteContentType(contentTypeName: string) {
+  async deleteContentType(contentTypeId: number) {
+    const contentTypeName = await this.resolveContentTypeName(contentTypeId)
     this.prismaDataModel.deleteType(contentTypeName)
+  }
+
+  async updateContentType(
+    contentTypeId: number,
+    name: string,
+    description: string,
+  ) {
+    const contentTypeName = await this.resolveContentTypeName(contentTypeId)
+    if (contentTypeName !== name) {
+      this.prismaDataModel.updateContentTypeName(contentTypeName, name)
+    }
   }
 
   async deleteContentTypeField(fieldId: string) {
