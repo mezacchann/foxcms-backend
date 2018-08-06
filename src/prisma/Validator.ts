@@ -14,6 +14,9 @@ export class Validator {
     if (/\s/.test(typeName)) {
       throw new Error('Type name may not contain any whitespaces')
     }
+    if (/^\d/.test(typeName)) {
+      throw new Error('Type name must start with a letter')
+    }
     return true
   }
 
@@ -29,6 +32,12 @@ export class Validator {
       throw new Error(
         `Field ${fieldName} exists already within type ${typeName}`,
       )
+    }
+    if (/\s/.test(fieldName)) {
+      throw new Error('Field name may not contain any whitespaces')
+    }
+    if (/^\d/.test(fieldName)) {
+      throw new Error('Field name must start with a letter')
     }
     this.validateTypeExistence(typeName)
     return true

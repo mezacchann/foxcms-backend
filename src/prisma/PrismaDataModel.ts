@@ -73,8 +73,8 @@ export class PrismaDataModel {
   }
 
   private updateModel(model: string): string {
-    this.updateRemoteModel(model)
     this.deploy(model)
+    this.updateRemoteModel(model)
     this.model.content = model
     return model
   }
@@ -104,6 +104,13 @@ export class PrismaDataModel {
       }
     }`
     const prismaEndpointUrl = url.parse(this.prismaEndpoint)
-    await request(`${prismaEndpointUrl.host}/management`, mutation)
+    try {
+      await request(
+        `${prismaEndpointUrl.protocol}//${prismaEndpointUrl.host}/management`,
+        mutation,
+      )
+    } catch (err) {
+      throw new Error(err.response.errors)
+    }
   }
 }
