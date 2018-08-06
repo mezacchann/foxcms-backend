@@ -54,6 +54,12 @@ describe('PrismaDataModel', () => {
       expect(deployFn.mock.calls.length).toBe(0)
       expect(updateRemoteModelFn.mock.calls.length).toBe(0)
     })
+
+    it('Should throw an error when the type name starts with an number', () => {
+      expect(() => prismaDataModel.addType('1photo')).toThrow()
+      expect(deployFn.mock.calls.length).toBe(0)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(0)
+    })
   })
 
   describe('Add a new field to a content type', () => {
@@ -119,6 +125,34 @@ describe('PrismaDataModel', () => {
       ).toThrow()
       expect(deployFn.mock.calls.length).toBe(2)
       expect(updateRemoteModelFn.mock.calls.length).toBe(2)
+    })
+
+    it('Should throw an error when the field name contains whitespaces', () => {
+      prismaDataModel.addType('photo')
+      expect(() =>
+        prismaDataModel.addField({
+          contentTypeName: 'photo',
+          fieldName: 'wi dth',
+          fieldType: 'String',
+          isRequired: true,
+        }),
+      ).toThrow()
+      expect(deployFn.mock.calls.length).toBe(1)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(1)
+    })
+
+    it('Should throw an error when the field name starts with a number', () => {
+      prismaDataModel.addType('photo')
+      expect(() =>
+        prismaDataModel.addField({
+          contentTypeName: '1photo',
+          fieldName: 'wi dth',
+          fieldType: 'String',
+          isRequired: true,
+        }),
+      ).toThrow()
+      expect(deployFn.mock.calls.length).toBe(1)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(1)
     })
   })
 
