@@ -186,9 +186,17 @@ describe('PrismaDataModel', () => {
       expect(updateRemoteModelFn.mock.calls.length).toBe(4)
     })
 
-    it('Should throw an error when deleting an not existent content type', () => {
+    it('Should throw an error when updating with an invalid name', () => {
       prismaDataModel.addType('photo')
-      expect(() => prismaDataModel.deleteType('photo2')).toThrow()
+      expect(() => prismaDataModel.updateContentTypeName('photo', 'pho to')).toThrow()
+      expect(() => prismaDataModel.updateContentTypeName('photo', '1photo')).toThrow()
+      expect(deployFn.mock.calls.length).toBe(1)
+      expect(updateRemoteModelFn.mock.calls.length).toBe(1)
+    })
+
+    it('Should throw an error when trying to update an not existent type', () => {
+      prismaDataModel.addType('photo')
+      expect(() => prismaDataModel.updateContentTypeName('photo2', 'photo')).toThrow()
       expect(deployFn.mock.calls.length).toBe(1)
       expect(updateRemoteModelFn.mock.calls.length).toBe(1)
     })
