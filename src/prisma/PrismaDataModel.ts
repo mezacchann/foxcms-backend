@@ -55,13 +55,13 @@ export class PrismaDataModel {
 
   deleteType(contentTypeName: string): string {
     this.validator.isTypeDeletable(contentTypeName)
-    const regex = new RegExp(`type\\\s*${contentTypeName}\\\s*\\{[^{}]*\\}\\\s`)
+    const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
     return this.updateModel(this.model.content.replace(regex, ''))
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string): string {
     this.validator.isFieldDeletable(contentTypeName, fieldName)
-    const regex = new RegExp(`type.*${contentTypeName}\\\s*\\{[^{}]*\\}`)
+    const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
     const matchedContent = this.model.content.match(regex)[0]
     const typeWithRemovedField = matchedContent.replace(
       new RegExp(`[^\S\r\n]*${fieldName}.*\n`),

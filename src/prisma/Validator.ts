@@ -81,7 +81,7 @@ export class Validator {
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
-    const regex = new RegExp(`type.*${typeName}.*{([^}]+)}`)
+    const regex = new RegExp(`type ${typeName} \\{[^{}]*\\}`)
     const result = this.model.content.match(regex)
     return result[0].indexOf(fieldName) > -1
   }
