@@ -1,20 +1,18 @@
 import { Resolver, Mutation } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
+import { UserService } from '../user/UserService'
+import { Inject, forwardRef } from '../../node_modules/@nestjs/common'
 
 @Resolver('Project')
 export class ProjectResolver {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly projectService: ProjectService,
+  ) {}
 
   @Mutation()
   async createProject(obj, { userId, name }, context, info) {
-    const user = await context.prisma.query.user(
-      {
-        where: {
-          id: userId,
-        },
-      },
-      info,
-    )
+    const user = await this.userService.getUserById(userId)
     if (!user) {
       throw new Error(`User with id ${userId} does not exist`)
     }

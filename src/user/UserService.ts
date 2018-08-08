@@ -13,4 +13,15 @@ export class UserService {
       info,
     )
   }
+
+  getUserById(id: string, info: string = '{id}') {
+    return this.prismaBinding.query.user(
+      {
+        where: {
+          id,
+        },
+      },
+      info,
+    )
+  }
 }
