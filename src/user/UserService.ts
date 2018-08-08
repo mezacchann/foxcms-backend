@@ -1,23 +1,16 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Inject } from '@nestjs/common'
 
 @Injectable()
 export class UserService {
-  private users = [
-    { id: 1, name: 'Tom' },
-    { id: 2, name: 'Sashko' },
-    { id: 3, name: 'Mikhail' },
-  ]
-
-  find(id: number) {
-    return this.users.find(user => user.id === id)
-  }
-
-  create(name: string) {
-    const newUser = {
-      id: Math.random(),
-      name,
-    }
-    this.users.push(newUser)
-    return newUser
+  constructor(@Inject('PrismaBinding') private prismaBinding) {}
+  getUser(email: string, info: string = '{id}') {
+    return this.prismaBinding.query.user(
+      {
+        where: {
+          email,
+        },
+      },
+      info,
+    )
   }
 }

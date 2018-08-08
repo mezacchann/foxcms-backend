@@ -1,20 +1,17 @@
 import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
+import { UserService } from './UserService'
 
 @Resolver('User')
 export class UserResolver {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly projectService: ProjectService,
+  ) {}
 
   @Query()
   user(obj, { email }, context, info) {
-    return context.prisma.query.user(
-      {
-        where: {
-          email,
-        },
-      },
-      info,
-    )
+    return this.userService.getUser(email, info)
   }
 
   @Mutation()
