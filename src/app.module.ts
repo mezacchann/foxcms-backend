@@ -13,16 +13,13 @@ import { RemoteSchema } from './prisma/RemoteSchema'
 export class AppModule {
   constructor(
     private readonly graphQLFactory: GraphQLFactory,
-    @Inject('PrismaSchema') private remoteSchema: RemoteSchema,
+    @Inject('PrismaBinding') private prismaBinding,
   ) {}
 
   configureGraphQL(app: any) {
     const typeDefs = this.graphQLFactory.mergeTypesByPaths('./**/*.graphql')
     const schema = this.graphQLFactory.createSchema({ typeDefs })
-    const prisma = new Prisma({
-      typeDefs: this.remoteSchema.schemaDefinition,
-      endpoint: process.env.PRISMA_SERVER_ENDPOINT,
-    })
+    const prisma = this.prismaBinding
     const server = new ApolloServer({
       schema,
       context: req => ({
