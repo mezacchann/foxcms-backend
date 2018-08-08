@@ -1,13 +1,14 @@
 import { Resolver, Mutation } from '@nestjs/graphql'
-import { UserService } from './UserService'
+import { ProjectService } from './../project/ProjectService'
+import * as randomString from 'randomstring'
 
 @Resolver('User')
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly projectService: ProjectService) {}
 
   @Mutation()
   async signup(obj, { email }, context, info) {
-    return context.prisma.mutation.createUser(
+    const user = await context.prisma.mutation.createUser(
       {
         data: {
           email,
@@ -15,5 +16,22 @@ export class UserResolver {
       },
       info,
     )
+    const projectName = await this.projectService.buildProject()
+    await context.prisma.mutation.createProject(
+      {
+        data: {
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          providedName: 'demo-project',
+          generatedName: projectName,
+          stage: 'dev',
+        },
+      },
+      info,
+    )
+    return user
   }
 }

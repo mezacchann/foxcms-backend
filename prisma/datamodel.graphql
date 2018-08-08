@@ -6,7 +6,8 @@ type User {
 
 type Project {
   id: ID! @unique
-  name: String!
+  providedName: String!
+  generatedName: String!
   stage: String!
   secret: String
   datamodel: String! @default(value: "")
