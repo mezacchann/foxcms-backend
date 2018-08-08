@@ -1,18 +1,27 @@
-type ContentType {
+type User {
   id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String! @unique
-  description: String
-  fields: [ContentTypeField!]!
+  email: String! @unique
+  projects: [Project!]!
 }
 
-enum ContentTypeFieldType {
-  String
-  Image
-  Int
-  Float
-  Boolean
+type Project {
+  id: ID! @unique
+  name: String!
+  stage: String!
+  secret: String
+  datamodel: String! @default(value: "")
+  user: User!
+  types: [ContentType!]!
+}
+
+type ContentType {
+  id: ID! @unique
+  project: Project!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  description: String
+  fields: [ContentTypeField!]!
 }
 
 type ContentTypeField {
@@ -25,10 +34,9 @@ type ContentTypeField {
   isRequired: Boolean!
 }
 
-type Configuration {
-  id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String! @unique
-  value: String!
+enum ContentTypeFieldType {
+  String
+  Int
+  Float
+  Boolean
 }
