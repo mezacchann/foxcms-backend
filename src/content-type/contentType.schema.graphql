@@ -5,21 +5,16 @@ input ContentTypeFieldInput {
   isRequired: Boolean
 }
 
-type Mutation {
-  addContentType(
-    projectId: ID!
-    contentTypeName: String!
-    description: String
-  ): ContentType!
+#type Mutation {
 
-  #addContentTypeField(
-  #  contentTypeField: ContentTypeFieldInput!
-  #): ContentTypeField!
-  #renewContentType(
-  #  contentTypeId: ID!
-  #  name: String!
-  #  description: String!
-  #): ContentType!
-  #removeContentType(contentTypeId: ID!): ContentType
-  #removeContentTypeField(fieldId: ID!): ContentTypeField
-}
+#addContentTypeField(
+#  contentTypeField: ContentTypeFieldInput!
+#): ContentTypeField!
+#renewContentType(
+#  contentTypeId: ID!
+#  name: String!
+#  description: String!
+#): ContentType!
+#removeContentType(contentTypeId: ID!): ContentType
+#removeContentTypeField(fieldId: ID!): ContentTypeField
+#}

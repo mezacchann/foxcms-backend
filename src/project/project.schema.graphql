@@ -3,4 +3,9 @@ type Query {
 }
 type Mutation {
   createProject(userId: ID!, name: String!): Project!
+  addContentType(
+    projectId: ID!
+    contentTypeName: String!
+    description: String
+  ): ContentType!
 }
