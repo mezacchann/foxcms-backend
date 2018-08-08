@@ -6,19 +6,59 @@ export class ContentTypeResolver {
   constructor(private readonly contentTypeService: ContentTypeService) {}
 
   @Mutation()
-  addContentType(obj, { contentTypeName, description }, context, info) {
-    this.contentTypeService.addContentType(contentTypeName)
+  async addContentType(
+    obj,
+    { projectId, contentTypeName, description },
+    context,
+    info,
+  ) {
+    const project = await context.prisma.query.project(
+      {
+        where: {
+          id: projectId,
+        },
+      },
+      `{
+        id
+        generatedName
+        stage
+        datamodel
+       }`,
+    )
+    if (!project) {
+      throw new Error(`Project with id ${projectId} doesn't exist`)
+    }
+    const newDatamodel = await this.contentTypeService.addContentType(
+      project,
+      contentTypeName,
+    )
+    await context.prisma.mutation.updateProject(
+      {
+        where: {
+          id: projectId,
+        },
+        data: {
+          datamodel: newDatamodel,
+        },
+      },
+      info,
+    )
     return context.prisma.mutation.createContentType(
       {
         data: {
           name: contentTypeName,
           description,
+          project: {
+            connect: {
+              id: projectId,
+            },
+          },
         },
       },
       info,
     )
   }
-
+  /*
   @Mutation()
   async addContentTypeField(obj, args, context, info) {
     const {
@@ -99,4 +139,5 @@ export class ContentTypeResolver {
       info,
     )
   }
+  */
 }

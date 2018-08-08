@@ -1,19 +1,36 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { request } from 'graphql-request'
+import { Project } from '../project/Project'
 
 @Injectable()
 export class ContentTypeService {
-  constructor(
-    @Inject('PrismaEndpoint') private readonly prismaEndpoint: string,
-    @Inject('PrismaDataModel')
-    private readonly prismaDataModel: PrismaDataModel,
-  ) {}
-
-  addContentType(contentTypeName: string) {
-    this.prismaDataModel.addType(contentTypeName)
+  async addContentType(project: Project, typeName: string): Promise<string> {
+    const datamodel = new PrismaDataModel(project.datamodel)
+    const newDatamodel = datamodel.addType(typeName)
+    await this.deploy(project.generatedName, project.stage, newDatamodel)
+    return newDatamodel
   }
 
+  private async deploy(projectName: string, stage: string, datamodel: string) {
+    const mutation = `
+    mutation {
+      deploy(
+        input: {
+          name: "${projectName}"
+          stage: "${stage}"
+          types: "${datamodel}"
+        }
+      ) {
+        errors {
+          description
+        }
+      }
+    }`
+    const endpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+    await request(`${endpoint.origin}/management`, mutation)
+  }
+  /*
   async addContentTypeField(
     contentTypeId: number,
     fieldName: string,
@@ -75,4 +92,5 @@ export class ContentTypeService {
       queryResult.contentTypeFields[0].name,
     )
   }
+  */
 }
