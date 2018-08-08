@@ -16,13 +16,12 @@ export class PrismaDataModel {
     Date: 'DateTime',
     Json: 'Json',
   }
-
+  private model: Model = { content: '' }
   private validator: Validator
   constructor(
     @Inject('PrismaEndpoint') private prismaEndpoint: string,
-    @Inject('DynamicModel') private model: Model,
   ) {
-    this.validator = new Validator(model)
+    this.validator = new Validator(this.model)
   }
 
   addType(typeName: string): string {
