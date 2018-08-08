@@ -1,0 +1,6 @@
+type Query {
+  getProject(id: ID!): Project
+}
+type Mutation {
+  createProject(userId: ID!, name: String!): Project!
+}
