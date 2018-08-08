@@ -1,10 +1,9 @@
-import Model from './Model'
-
+import Datamodel from './PrismaDataModel'
 export class Validator {
-  private readonly model: Model
+  private readonly datamodel: Datamodel
 
-  constructor(model: Model) {
-    this.model = model
+  constructor(datamodel: Datamodel) {
+    this.datamodel = datamodel
   }
 
   isTypeCreatable(typeName: string): boolean {
@@ -76,13 +75,13 @@ export class Validator {
 
   private typeExists(typeName: string): boolean {
     const regex = new RegExp(`type.*${typeName}.*{`)
-    const result = this.model.content.match(regex)
+    const result = this.datamodel.content.match(regex)
     return result !== null
   }
 
   private fieldExistsWithinType(typeName: string, fieldName: string) {
     const regex = new RegExp(`type ${typeName} \\{[^{}]*\\}`)
-    const result = this.model.content.match(regex)
+    const result = this.datamodel.content.match(regex)
     return result[0].indexOf(fieldName) > -1
   }
 }
