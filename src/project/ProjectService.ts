@@ -22,7 +22,11 @@ export class ProjectService {
     )
   }
   async buildProject(stage: string = 'dev', secret?: string): Promise<string> {
-    const projectName = generate({ length: 6, readable: true })
+    const projectName = generate({
+      length: 7,
+      readable: true,
+      charset: 'alphabetic',
+    })
     await request(
       `${this.prismaServerEndpoint.origin}/management`,
       ADD_PROJECT,
