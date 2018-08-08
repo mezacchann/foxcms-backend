@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common'
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
 
