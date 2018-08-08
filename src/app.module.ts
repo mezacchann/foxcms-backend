@@ -4,8 +4,6 @@ import { ApolloServer } from 'apollo-server-express'
 import { UserModule } from './user/UserModule'
 import { ContentTypeModule } from './content-type/ContentTypeModule'
 import { PrismaModule } from './prisma/PrismaModule'
-import { Prisma } from 'prisma-binding'
-import { RemoteSchema } from './prisma/RemoteSchema'
 
 @Module({
   imports: [GraphQLModule, UserModule, ContentTypeModule, PrismaModule],
