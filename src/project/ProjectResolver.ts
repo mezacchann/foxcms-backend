@@ -41,37 +41,19 @@ export class ProjectResolver {
     context,
     info,
   ) {
-    const project = await context.prisma.query.project(
-      {
-        where: {
-          id: projectId,
-        },
-      },
+    const project = await this.projectService.getProject(
+      projectId,
       `{
-        id
-        generatedName
-        stage
-        datamodel
-       }`,
+      id
+      generatedName
+      stage
+      datamodel
+     }`,
     )
     if (!project) {
       throw new Error(`Project with id ${projectId} doesn't exist`)
     }
-    const newDatamodel = await this.projectService.addContentType(
-      project,
-      contentTypeName,
-    )
-    await context.prisma.mutation.updateProject(
-      {
-        where: {
-          id: projectId,
-        },
-        data: {
-          datamodel: newDatamodel,
-        },
-      },
-      info,
-    )
+    await this.projectService.addContentType(project, contentTypeName)
     return context.prisma.mutation.createContentType(
       {
         data: {
