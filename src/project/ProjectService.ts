@@ -7,13 +7,17 @@ import { Project } from './Project'
 
 @Injectable()
 export class ProjectService {
+  prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
   async buildProject(stage: string = 'dev', secret?: string): Promise<string> {
-    const endpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
     const projectName = generate({ length: 6, readable: true })
-    await request(`${endpoint.origin}/management`, ADD_PROJECT, {
-      name: projectName,
-      stage,
-    })
+    await request(
+      `${this.prismaServerEndpoint.origin}/management`,
+      ADD_PROJECT,
+      {
+        name: projectName,
+        stage,
+      },
+    )
     return projectName
   }
 
@@ -25,8 +29,7 @@ export class ProjectService {
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string) {
-    const endpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-    await request(`${endpoint.origin}/management`, DEPLOY, {
+    await request(`${this.prismaServerEndpoint.origin}/management`, DEPLOY, {
       projectName,
       stage,
       types: datamodel,
