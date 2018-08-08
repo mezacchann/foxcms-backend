@@ -7,7 +7,7 @@ export class UserResolver {
   constructor(private readonly projectService: ProjectService) {}
 
   @Mutation()
-  async signup(obj, { email }, context, info) {
+  async createUser(obj, { email }, context, info) {
     const user = await context.prisma.mutation.createUser(
       {
         data: {
