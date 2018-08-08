@@ -1,10 +1,21 @@
-import { Resolver, Mutation } from '@nestjs/graphql'
+import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
-import * as randomString from 'randomstring'
 
 @Resolver('User')
 export class UserResolver {
   constructor(private readonly projectService: ProjectService) {}
+
+  @Query()
+  user(obj, { email }, context, info) {
+    return context.prisma.query.user(
+      {
+        where: {
+          email,
+        },
+      },
+      info,
+    )
+  }
 
   @Mutation()
   async createUser(obj, { email }, context, info) {
