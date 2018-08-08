@@ -6,20 +6,18 @@ type User {
 
 type Project {
   id: ID! @unique
+  user: User!
+  types: [ContentType!]!
   providedName: String!
   generatedName: String!
   stage: String!
   secret: String
   datamodel: String! @default(value: "")
-  user: User!
-  types: [ContentType!]!
 }
 
 type ContentType {
   id: ID! @unique
   project: Project!
-  createdAt: DateTime!
-  updatedAt: DateTime!
   name: String!
   description: String
   fields: [ContentTypeField!]!
@@ -27,8 +25,6 @@ type ContentType {
 
 type ContentTypeField {
   id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
   contentType: ContentType!
   name: String!
   type: ContentTypeFieldType!
