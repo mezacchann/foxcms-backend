@@ -70,6 +70,19 @@ export class ProjectResolver {
   }
 
   @Mutation()
+  async deleteContentType(obj, { id }, context, info) {
+    await this.projectService.deleteContentType(id)
+    return context.prisma.mutation.deleteContentType(
+      {
+        where: {
+          id,
+        },
+      },
+      info,
+    )
+  }
+
+  @Mutation()
   async addContentTypeField(obj, { contentTypeField }, context, info) {
     await this.projectService.addContentTypeField(contentTypeField)
     return context.prisma.mutation.createContentTypeField(

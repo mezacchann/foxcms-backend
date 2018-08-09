@@ -21,11 +21,12 @@ type ContentType {
   name: String!
   description: String
   fields: [ContentTypeField!]!
+    @relation(name: "ContentTypeFields", onDelete: CASCADE)
 }
 
 type ContentTypeField {
   id: ID! @unique
-  contentType: ContentType!
+  contentType: ContentType! @relation(name: "ContentTypeFields")
   name: String!
   type: ContentTypeFieldType!
   isRequired: Boolean!

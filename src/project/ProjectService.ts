@@ -51,11 +51,32 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
+  async deleteContentType(id: number) {
+    const contentType = await this.contentTypeService.getContentType(
+      id,
+      '{name project{id generatedName stage datamodel}}',
+    )
+    if (!contentType) {
+      throw new Error(`Content type with id ${id} doesnt exist`)
+    }
+    const { project } = contentType
+    const datamodel = new PrismaDataModel(project.datamodel)
+    const modifiedDatamodel = datamodel.deleteType(contentType.name)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.updateProjectDatamodel(project.id, modifiedDatamodel)
+    return modifiedDatamodel
+  }
+
   async addContentTypeField(field: ContentTypeFieldCreateInput) {
     const contentType = await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
     )
+    if (!contentType) {
+      throw new Error(
+        `Content type with id ${field.contentTypeId} doesnt exist`,
+      )
+    }
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addField(contentType.name, field)

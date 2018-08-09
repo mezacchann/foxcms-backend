@@ -6,36 +6,6 @@ export class ContentTypeResolver {
   constructor(private readonly contentTypeService: ContentTypeService) {}
 
   /*
-  @Mutation()
-  async addContentTypeField(obj, args, context, info) {
-    const {
-      contentTypeId,
-      fieldName,
-      fieldType,
-      isRequired,
-    } = args.contentTypeField
-    await this.contentTypeService.addContentTypeField(
-      contentTypeId,
-      fieldName,
-      fieldType,
-      isRequired,
-    )
-    return context.prisma.mutation.createContentTypeField(
-      {
-        data: {
-          contentType: {
-            connect: {
-              id: contentTypeId,
-            },
-          },
-          name: fieldName,
-          type: fieldType,
-          isRequired,
-        },
-      },
-      info,
-    )
-  }
 
   @Mutation()
   async removeContentType(obj, args, context, info) {
