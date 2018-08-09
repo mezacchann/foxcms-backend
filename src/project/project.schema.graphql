@@ -1,3 +1,9 @@
+input ContentTypeFieldCreateInput {
+  contentTypeId: ID!
+  name: String!
+  type: ContentTypeFieldType
+  isRequired: Boolean
+}
 type Query {
   getProject(id: ID!): Project
 }
@@ -12,4 +18,5 @@ type Mutation {
   addContentTypeField(
     contentTypeField: ContentTypeFieldCreateInput!
   ): ContentTypeField!
+  deleteContentTypeField(id: ID!): ContentTypeField
 }

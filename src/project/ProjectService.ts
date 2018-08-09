@@ -85,6 +85,26 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
+  async deleteContentTypeField(id: number) {
+    const contentTypeField = await this.contentTypeService.getContentTypeField(
+      id,
+      '{name contentType{name project{id generatedName stage datamodel}}}',
+    )
+    if (!contentTypeField) {
+      throw new Error(`Content type field with id ${id} doesnt exist`)
+    }
+    const { contentType } = contentTypeField
+    const { project } = contentType
+    const datamodel = new PrismaDataModel(project.datamodel)
+    const modifiedDatamodel = datamodel.deleteContentTypeField(
+      contentType.name,
+      contentTypeField.name,
+    )
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.updateProjectDatamodel(project.id, modifiedDatamodel)
+    return modifiedDatamodel
+  }
+
   private async deploy(projectName: string, stage: string, datamodel: string) {
     await request(`${this.prismaServerEndpoint.origin}/management`, DEPLOY, {
       projectName,
