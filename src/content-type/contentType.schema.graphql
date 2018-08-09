@@ -1,7 +1,7 @@
-input ContentTypeFieldInput {
+input ContentTypeFieldCreateInput {
   contentTypeId: ID!
-  fieldName: String!
-  fieldType: ContentTypeFieldType
+  name: String!
+  type: ContentTypeFieldType
   isRequired: Boolean
 }
 

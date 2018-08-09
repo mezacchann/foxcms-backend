@@ -6,5 +6,6 @@ import { PrismaModule } from './../prisma/PrismaModule'
 @Module({
   imports: [PrismaModule],
   providers: [ContentTypeResolver, ContentTypeService],
+  exports: [ContentTypeService],
 })
 export class ContentTypeModule {}

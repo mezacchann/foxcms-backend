@@ -4,23 +4,28 @@ import { request } from 'graphql-request'
 import { ADD_PROJECT, DEPLOY } from './mutations'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
+import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
+import { ContentTypeService } from '../content-type/ContentTypeService'
 
 @Injectable()
 export class ProjectService {
-  constructor(@Inject('PrismaBinding') private prismaBinding) {}
-
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+  constructor(
+    @Inject('PrismaBinding') private prismaBinding,
+    private contentTypeService: ContentTypeService,
+  ) {}
 
-  getProject(projectId: number, info: string = '{id}') {
+  getProject(id: number, info: string = '{id}') {
     return this.prismaBinding.query.project(
       {
         where: {
-          id: projectId,
+          id,
         },
       },
       info,
     )
   }
+
   async buildProject(stage: string = 'dev', secret?: string): Promise<string> {
     const projectName = generate({
       length: 7,
@@ -40,10 +45,23 @@ export class ProjectService {
 
   async addContentType(project: Project, typeName: string): Promise<string> {
     const datamodel = new PrismaDataModel(project.datamodel)
-    const newDatamodel = datamodel.addType(typeName)
-    await this.deploy(project.generatedName, project.stage, newDatamodel)
-    await this.updateProjectDatamodel(project.id, newDatamodel)
-    return newDatamodel
+    const modifiedDatamodel = datamodel.addType(typeName)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.updateProjectDatamodel(project.id, modifiedDatamodel)
+    return modifiedDatamodel
+  }
+
+  async addContentTypeField(field: ContentTypeFieldCreateInput) {
+    const contentType = await this.contentTypeService.getContentType(
+      field.contentTypeId,
+      '{name project{id generatedName stage datamodel}}',
+    )
+    const { project } = contentType
+    const datamodel = new PrismaDataModel(project.datamodel)
+    const modifiedDatamodel = datamodel.addField(contentType.name, field)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.updateProjectDatamodel(project.id, modifiedDatamodel)
+    return modifiedDatamodel
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string) {

@@ -1,7 +1,6 @@
 import { Resolver, Mutation } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
-import { Inject, forwardRef } from '../../node_modules/@nestjs/common'
 
 @Resolver('Project')
 export class ProjectResolver {
@@ -64,6 +63,26 @@ export class ProjectResolver {
               id: projectId,
             },
           },
+        },
+      },
+      info,
+    )
+  }
+
+  @Mutation()
+  async addContentTypeField(obj, { contentTypeField }, context, info) {
+    await this.projectService.addContentTypeField(contentTypeField)
+    return context.prisma.mutation.createContentTypeField(
+      {
+        data: {
+          contentType: {
+            connect: {
+              id: contentTypeField.contentTypeId,
+            },
+          },
+          name: contentTypeField.name,
+          type: contentTypeField.type,
+          isRequired: contentTypeField.isRequired,
         },
       },
       info,

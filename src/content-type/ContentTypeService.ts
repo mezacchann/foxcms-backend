@@ -5,31 +5,19 @@ import { Project } from '../project/Project'
 
 @Injectable()
 export class ContentTypeService {
-  async addContentType(project: Project, typeName: string): Promise<string> {
-    const datamodel = new PrismaDataModel(project.datamodel)
-    const newDatamodel = datamodel.addType(typeName)
-    await this.deploy(project.generatedName, project.stage, newDatamodel)
-    return newDatamodel
+  constructor(@Inject('PrismaBinding') private prismaBinding) {}
+
+  getContentType(id: number, info: string = '{id}') {
+    return this.prismaBinding.query.contentType(
+      {
+        where: {
+          id,
+        },
+      },
+      info,
+    )
   }
 
-  private async deploy(projectName: string, stage: string, datamodel: string) {
-    const mutation = `
-    mutation {
-      deploy(
-        input: {
-          name: "${projectName}"
-          stage: "${stage}"
-          types: "${datamodel}"
-        }
-      ) {
-        errors {
-          description
-        }
-      }
-    }`
-    const endpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-    await request(`${endpoint.origin}/management`, mutation)
-  }
   /*
   async addContentTypeField(
     contentTypeId: number,
