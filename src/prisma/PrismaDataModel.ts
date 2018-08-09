@@ -1,5 +1,6 @@
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
+import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 
 export default interface Datamodel {
   content: string
@@ -29,25 +30,31 @@ export class PrismaDataModel {
     return this.datamodel.content
   }
 
-  addField(field: ContentTypeField): string {
-    const newDatamodel = this.addFieldToModel({
+  addField(
+    contentTypeName: string,
+    field: ContentTypeFieldCreateInput,
+  ): string {
+    const newDatamodel = this.addFieldToModel(contentTypeName, {
       ...field,
-      fieldType: this.customTypeToDataType[field.fieldType],
+      type: this.customTypeToDataType[field.type],
     })
     this.datamodel.content = newDatamodel
     return this.datamodel.content
   }
 
-  private addFieldToModel(field: ContentTypeField): string {
-    const { contentTypeName, fieldName, fieldType, isRequired } = field
-    this.validator.isFieldCreatable(contentTypeName, fieldName)
+  private addFieldToModel(
+    contentTypeName: string,
+    field: ContentTypeFieldCreateInput,
+  ): string {
+    const { name, type, isRequired } = field
+    this.validator.isFieldCreatable(contentTypeName, name)
     const matchedType = this.datamodel.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0]
     const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
     const result =
       this.datamodel.content.slice(0, idx) +
-      ` ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
+      ` ${name}: ${type}${isRequired ? '!' : ''}` +
       this.datamodel.content.slice(idx)
     return result
   }
