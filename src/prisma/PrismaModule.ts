@@ -1,18 +1,9 @@
-import { Module, Logger } from '@nestjs/common'
-import { remoteSchema } from './remoteSchema.provider'
-import { dataModels } from './dataModels.provider'
-import { endpointProvider } from './endpoint.provider'
+import { Module } from '@nestjs/common'
 import { PrismaDataModel } from './PrismaDataModel'
-import { dynamicModelPathProvider } from './dynamicModelPath.provider'
+import { prismaBinding } from './prismaBinding.provider'
+
 @Module({
-  providers: [
-    remoteSchema,
-    ...dataModels,
-    endpointProvider,
-    dynamicModelPathProvider,
-    PrismaDataModel,
-    Logger,
-  ],
-  exports: [remoteSchema, endpointProvider, PrismaDataModel],
+  providers: [PrismaDataModel, prismaBinding],
+  exports: [PrismaDataModel, prismaBinding],
 })
 export class PrismaModule {}

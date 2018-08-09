@@ -1,34 +1,40 @@
-type ContentType {
+type User {
   id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String! @unique
-  description: String
-  fields: [ContentTypeField!]!
+  email: String! @unique
+  projects: [Project!]!
 }
 
-enum ContentTypeFieldType {
-  String
-  Image
-  Int
-  Float
-  Boolean
+type Project {
+  id: ID! @unique
+  user: User!
+  types: [ContentType!]!
+  providedName: String!
+  generatedName: String!
+  stage: String!
+  secret: String
+  datamodel: String! @default(value: "")
+}
+
+type ContentType {
+  id: ID! @unique
+  project: Project!
+  name: String!
+  description: String
+  fields: [ContentTypeField!]!
+    @relation(name: "ContentTypeFields", onDelete: CASCADE)
 }
 
 type ContentTypeField {
   id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  contentType: ContentType!
+  contentType: ContentType! @relation(name: "ContentTypeFields")
   name: String!
   type: ContentTypeFieldType!
   isRequired: Boolean!
 }
 
-type Configuration {
-  id: ID! @unique
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  name: String! @unique
-  value: String!
+enum ContentTypeFieldType {
+  String
+  Int
+  Float
+  Boolean
 }

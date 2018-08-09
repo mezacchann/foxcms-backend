@@ -1,11 +1,11 @@
-import { Injectable, Inject } from '@nestjs/common'
-import { request } from 'graphql-request'
-import * as url from 'url'
 import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
-import Model from './Model'
+import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 
-@Injectable()
+export default interface Datamodel {
+  content: string
+}
+
 export class PrismaDataModel {
   private readonly customTypeToDataType = {
     String: 'String',
@@ -16,110 +16,78 @@ export class PrismaDataModel {
     Date: 'DateTime',
     Json: 'Json',
   }
-
   private validator: Validator
-  constructor(
-    @Inject('PrismaEndpoint') private prismaEndpoint: string,
-    @Inject('DynamicModel') private model: Model,
-  ) {
-    this.validator = new Validator(model)
+  private datamodel: Datamodel
+  constructor(datamodel: string) {
+    this.datamodel = { content: datamodel }
+    this.validator = new Validator(this.datamodel)
   }
 
   addType(typeName: string): string {
     this.validator.isTypeCreatable(typeName)
     const typeTemplate = `type ${typeName} {id: ID! @unique}`
-    return this.updateModel(this.model.content + typeTemplate)
+    this.datamodel.content += typeTemplate
+    return this.datamodel.content
   }
 
-  addField(field: ContentTypeField): string {
-    const newDatamodel = this.addFieldToModel({
+  addField(
+    contentTypeName: string,
+    field: ContentTypeFieldCreateInput,
+  ): string {
+    const newDatamodel = this.addFieldToModel(contentTypeName, {
       ...field,
-      fieldType: this.customTypeToDataType[field.fieldType],
+      type: this.customTypeToDataType[field.type],
     })
-    return this.updateModel(newDatamodel)
+    this.datamodel.content = newDatamodel
+    return this.datamodel.content
   }
 
-  private addFieldToModel(field: ContentTypeField): string {
-    const { contentTypeName, fieldName, fieldType, isRequired } = field
-    this.validator.isFieldCreatable(contentTypeName, fieldName)
-    const matchedType = this.model.content.match(
+  private addFieldToModel(
+    contentTypeName: string,
+    field: ContentTypeFieldCreateInput,
+  ): string {
+    const { name, type, isRequired } = field
+    this.validator.isFieldCreatable(contentTypeName, name)
+    const matchedType = this.datamodel.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
     )[0]
-    const idx = this.model.content.indexOf(matchedType) + matchedType.length
+    const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
     const result =
-      this.model.content.slice(0, idx) +
-      ` ${fieldName}: ${fieldType}${isRequired ? '!' : ''}` +
-      this.model.content.slice(idx)
+      this.datamodel.content.slice(0, idx) +
+      ` ${name}: ${type}${isRequired ? '!' : ''}` +
+      this.datamodel.content.slice(idx)
     return result
   }
 
   deleteType(contentTypeName: string): string {
     this.validator.isTypeDeletable(contentTypeName)
     const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
-    return this.updateModel(this.model.content.replace(regex, ''))
+    this.datamodel.content = this.datamodel.content.replace(regex, '')
+    return this.datamodel.content
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string): string {
     this.validator.isFieldDeletable(contentTypeName, fieldName)
     const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
-    const matchedContent = this.model.content.match(regex)[0]
+    const matchedContent = this.datamodel.content.match(regex)[0]
     const typeWithRemovedField = matchedContent.replace(
       new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
       '',
     )
-    return this.updateModel(
-      this.model.content.replace(matchedContent, typeWithRemovedField),
+    this.datamodel.content = this.datamodel.content.replace(
+      matchedContent,
+      typeWithRemovedField,
     )
+    return this.datamodel.content
   }
 
   updateContentTypeName(oldTypeName: string, newTypeName: string): string {
     this.validator.isTypeUpdatable(oldTypeName, newTypeName)
-    const newModel = this.model.content.replace(
+    const newModel = this.datamodel.content.replace(
       `type ${oldTypeName}`,
       `type ${newTypeName}`,
     )
-    return this.updateModel(newModel)
-  }
-
-  private updateModel(model: string): string {
-    this.deploy(model)
-    this.updateRemoteModel(model)
-    this.model.content = model
-    return model
-  }
-
-  private async updateRemoteModel(model: string) {
-    const mutation = `mutation {
-      updateConfiguration(where: {name: "dynamicModel"}, data: {value: "${model}"}) {
-        value
-      }
-    }`
-    await request(this.prismaEndpoint, mutation)
-  }
-
-  async deploy(model: string) {
-    const mutation = `
-    mutation {
-      deploy(
-        input: {
-          name: "foxcms"
-          stage: "dev"
-          types: "${model}"
-        }
-      ) {
-        errors {
-          description
-        }
-      }
-    }`
-    const prismaEndpointUrl = url.parse(this.prismaEndpoint)
-    try {
-      await request(
-        `${prismaEndpointUrl.protocol}//${prismaEndpointUrl.host}/management`,
-        mutation,
-      )
-    } catch (err) {
-      throw new Error(err.response.errors)
-    }
+    this.datamodel.content = newModel
+    return this.datamodel.content
   }
 }
