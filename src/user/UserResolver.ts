@@ -1,11 +1,15 @@
 import { Resolver, Mutation, Query } from '@nestjs/graphql'
+import * as bcrypt from 'bcrypt'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from './UserService'
+import { AuthService } from '../auth/auth.service'
+import User from './User'
 
 @Resolver('User')
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly projectService: ProjectService,
   ) {}
 
@@ -15,17 +19,18 @@ export class UserResolver {
   }
 
   @Mutation()
-  async createUser(obj, { email }, context, info) {
-    const user = await context.prisma.mutation.createUser(
+  async signup(obj, { username, password }, context, info) {
+    const user = (await context.prisma.mutation.createUser(
       {
         data: {
-          email,
+          username,
+          password: bcrypt.hashSync(password, bcrypt.genSaltSync()),
         },
       },
-      info,
-    )
+      '{id username password projects {id}}',
+    )) as User
     const projectName = await this.projectService.buildProject()
-    await context.prisma.mutation.createProject(
+    const project = await context.prisma.mutation.createProject(
       {
         data: {
           user: {
@@ -33,13 +38,15 @@ export class UserResolver {
               id: user.id,
             },
           },
-          providedName: 'demo-project',
+          providedName: 'initial-project',
           generatedName: projectName,
           stage: 'dev',
         },
       },
-      info,
+      '{providedName generatedName stage}',
     )
-    return user
+    user.projects.push(project)
+    const token = this.authService.createToken(user)
+    return token
   }
 }

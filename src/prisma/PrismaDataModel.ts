@@ -1,4 +1,3 @@
-import ContentTypeField from '../content-type/ContentTypeField'
 import { Validator } from './Validator'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 

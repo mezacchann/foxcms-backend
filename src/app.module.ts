@@ -4,9 +4,16 @@ import { graphqlExpress } from 'apollo-server-express'
 import { UserModule } from './user/UserModule'
 import { ContentTypeModule } from './content-type/ContentTypeModule'
 import { PrismaModule } from './prisma/PrismaModule'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
-  imports: [GraphQLModule, UserModule, ContentTypeModule, PrismaModule],
+  imports: [
+    GraphQLModule,
+    UserModule,
+    ContentTypeModule,
+    PrismaModule,
+    AuthModule,
+  ],
 })
 export class AppModule implements NestModule {
   constructor(
