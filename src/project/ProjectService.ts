@@ -26,7 +26,10 @@ export class ProjectService {
     )
   }
 
-  async buildProject(stage: string = 'dev', secret?: string): Promise<string> {
+  async buildProject(
+    stage: string = 'Production',
+    secret?: string,
+  ): Promise<string> {
     const projectName = generate({
       length: 7,
       readable: true,

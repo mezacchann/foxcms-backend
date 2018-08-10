@@ -53,7 +53,7 @@ export class UserResolver {
           },
           providedName: 'initial-project',
           generatedName: projectName,
-          stage: 'dev',
+          stage: 'Production',
         },
       },
       '{providedName generatedName stage}',

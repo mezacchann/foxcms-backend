@@ -29,7 +29,7 @@ export class ProjectResolver {
           },
           providedName: name,
           generatedName: projectName,
-          stage: 'dev',
+          stage: 'Production',
         },
       },
       info,
