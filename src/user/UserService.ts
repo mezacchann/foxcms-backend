@@ -1,13 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common'
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class UserService {
   constructor(@Inject('PrismaBinding') private prismaBinding) {}
-  getUser(email: string, info: string = '{id}') {
+  getUser(username: string, info = '{id}') {
     return this.prismaBinding.query.user(
       {
         where: {
-          email,
+          username,
         },
       },
       info,

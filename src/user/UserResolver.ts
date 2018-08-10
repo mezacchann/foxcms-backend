@@ -1,8 +1,8 @@
 import { Resolver, Mutation, Query } from '@nestjs/graphql'
-import * as bcrypt from 'bcrypt'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from './UserService'
 import { AuthService } from '../auth/AuthService'
+import * as bcrypt from 'bcrypt'
 import User from './User'
 
 @Resolver('User')
@@ -14,17 +14,26 @@ export class UserResolver {
   ) {}
 
   @Query()
-  user(obj, { email }, context, info) {
-    return this.userService.getUser(email, info)
+  async login(obj, { username, password }, context, info) {
+    const user = (await this.userService.getUser(
+      username,
+      '{password salt}',
+    )) as User
+    if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
+      throw new Error('You have entered an invalid username or password')
+    }
+    return this.authService.createToken(user)
   }
 
   @Mutation()
   async signup(obj, { username, password }, context, info) {
+    const salt = bcrypt.genSaltSync()
     const user = (await context.prisma.mutation.createUser(
       {
         data: {
           username,
-          password: bcrypt.hashSync(password, bcrypt.genSaltSync()),
+          password: bcrypt.hashSync(password, salt),
+          salt,
         },
       },
       '{id username password projects {id}}',

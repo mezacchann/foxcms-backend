@@ -2,6 +2,7 @@ type User {
   id: ID! @unique
   username: String! @unique
   password: String!
+  salt: String!
   imageUri: String
   projects: [Project!]! @relation(name: "UserProjects", onDelete: CASCADE)
 }

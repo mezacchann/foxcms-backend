@@ -1,5 +1,5 @@
 type Query {
-  user(email: String!): User!
+  login(username: String!, password: String!): String!
 }
 type Mutation {
   signup(username: String!, password: String!): String!
