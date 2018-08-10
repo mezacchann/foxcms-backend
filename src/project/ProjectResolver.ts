@@ -1,8 +1,11 @@
 import { Resolver, Mutation } from '@nestjs/graphql'
+import { UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
 
 @Resolver('Project')
+@UseGuards(AuthGuard('jwt'))
 export class ProjectResolver {
   constructor(
     private readonly userService: UserService,

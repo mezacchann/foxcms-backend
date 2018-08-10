@@ -17,12 +17,16 @@ export class UserResolver {
   async login(obj, { username, password }, context, info) {
     const user = (await this.userService.getUser(
       username,
-      '{password salt}',
+      '{username imageUri password salt projects{providedName generatedName stage}}',
     )) as User
     if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
       throw new Error('You have entered an invalid username or password')
     }
-    return this.authService.createToken(user)
+    return this.authService.createToken({
+      username: user.username,
+      imageUri: user.imageUri,
+      projects: user.projects,
+    })
   }
 
   @Mutation()
@@ -36,7 +40,7 @@ export class UserResolver {
           salt,
         },
       },
-      '{id username password projects {id}}',
+      '{username projects imageUri {id}}',
     )) as User
     const projectName = await this.projectService.buildProject()
     const project = await context.prisma.mutation.createProject(
@@ -55,7 +59,9 @@ export class UserResolver {
       '{providedName generatedName stage}',
     )
     user.projects.push(project)
-    const token = this.authService.createToken(user)
-    return token
+    return this.authService.createToken({
+      username: user.username,
+      projects: user.projects,
+    })
   }
 }

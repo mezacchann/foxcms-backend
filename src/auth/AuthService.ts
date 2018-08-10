@@ -8,8 +8,8 @@ import User from './../user/User'
 export class AuthService {
   constructor(private readonly userService: UserService) {}
 
-  createToken(user: User): string {
-    return jwt.sign(user, process.env.FOXCMS_SECRET, { expiresIn: 3600 })
+  createToken(jwtPayload: JwtPayload): string {
+    return jwt.sign(jwtPayload, process.env.FOXCMS_SECRET, { expiresIn: 3600 })
   }
 
   async validateUser(payload: JwtPayload): Promise<any> {
