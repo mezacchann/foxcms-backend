@@ -2,7 +2,7 @@ import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import * as bcrypt from 'bcrypt'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from './UserService'
-import { AuthService } from '../auth/auth.service'
+import { AuthService } from '../auth/AuthService'
 import User from './User'
 
 @Resolver('User')

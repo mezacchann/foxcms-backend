@@ -4,7 +4,7 @@ import { graphqlExpress } from 'apollo-server-express'
 import { UserModule } from './user/UserModule'
 import { ContentTypeModule } from './content-type/ContentTypeModule'
 import { PrismaModule } from './prisma/PrismaModule'
-import { AuthModule } from './auth/auth.module'
+import { AuthModule } from './auth/AuthModule'
 
 @Module({
   imports: [

@@ -3,7 +3,7 @@ import { UserService } from './UserService'
 import { UserResolver } from './UserResolver'
 import { ProjectModule } from '../project/ProjectModule'
 import { PrismaModule } from '../prisma/PrismaModule'
-import { AuthModule } from '../auth/auth.module'
+import { AuthModule } from '../auth/AuthModule'
 @Module({
   imports: [
     forwardRef(() => ProjectModule),
