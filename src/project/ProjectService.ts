@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common'
 import * as jwt from 'jsonwebtoken'
 import { generate } from 'randomstring'
-import { request } from 'graphql-request'
+import { request, GraphQLClient } from 'graphql-request'
 import { ADD_PROJECT, DEPLOY } from './mutations'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
@@ -11,8 +11,17 @@ import { ContentTypeService } from '../content-type/ContentTypeService'
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+  managementApiClient = new GraphQLClient(
+    `${this.prismaServerEndpoint.origin}/management`,
+    {
+      headers: {
+        Authorization: `Bearer ${this.prismaManagementToken}`,
+      },
+    },
+  )
   constructor(
     @Inject('PrismaBinding') private prismaBinding,
+    @Inject('PrismaManagementToken') private prismaManagementToken,
     private contentTypeService: ContentTypeService,
   ) {}
 
@@ -36,14 +45,10 @@ export class ProjectService {
       readable: true,
       charset: 'alphabetic',
     })
-    await request(
-      `${this.prismaServerEndpoint.origin}/management`,
-      ADD_PROJECT,
-      {
-        name: projectName,
-        stage,
-      },
-    )
+    await this.managementApiClient.request(ADD_PROJECT, {
+      name: projectName,
+      stage,
+    })
     return projectName
   }
 
@@ -126,7 +131,7 @@ export class ProjectService {
   }
 
   private async deploy(project: Project, stage: string, datamodel: string) {
-    await request(`${this.prismaServerEndpoint.origin}/management`, DEPLOY, {
+    await this.managementApiClient.request(DEPLOY, {
       projectName: project.generatedName,
       stage,
       types: datamodel,
