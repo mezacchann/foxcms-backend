@@ -113,6 +113,7 @@ export class ProjectService {
       projectName,
       stage,
       types: datamodel,
+      secrets: projectName + process.env.FOXCMS_SECRET + stage,
     })
   }
 

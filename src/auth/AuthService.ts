@@ -2,7 +2,6 @@ import * as jwt from 'jsonwebtoken'
 import { Injectable } from '@nestjs/common'
 import { UserService } from './../user/UserService'
 import { JwtPayload } from './JwtPayload'
-import User from './../user/User'
 
 @Injectable()
 export class AuthService {
