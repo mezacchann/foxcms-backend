@@ -121,7 +121,7 @@ export class ProjectService {
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
       project.generatedName + process.env.FOXCMS_SECRET + project.stage,
-      { expiresIn: temporary ? 3600 : '1y' },
+      { expiresIn: temporary ? '1h' : '1y' },
     )
   }
 

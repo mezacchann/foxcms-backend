@@ -8,7 +8,7 @@ export class AuthService {
   constructor(private readonly userService: UserService) {}
 
   createToken(jwtPayload: JwtPayload): string {
-    return jwt.sign(jwtPayload, process.env.FOXCMS_SECRET, { expiresIn: 3600 })
+    return jwt.sign(jwtPayload, process.env.FOXCMS_SECRET, { expiresIn: '1h' })
   }
 
   async validateUser(payload: JwtPayload): Promise<any> {
