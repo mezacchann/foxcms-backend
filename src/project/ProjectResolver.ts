@@ -1,4 +1,4 @@
-import { Resolver, Mutation } from '@nestjs/graphql'
+import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import { UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
@@ -11,6 +11,11 @@ export class ProjectResolver {
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
   ) {}
+
+  @Query()
+  async generatePermToken(obj, { projectId }, context, info) {
+    return this.projectService.generateProjectToken(projectId, false)
+  }
 
   @Mutation()
   async createProject(obj, { userId, name }, context, info) {

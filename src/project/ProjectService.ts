@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
+import * as jwt from 'jsonwebtoken'
 import { generate } from 'randomstring'
 import { request } from 'graphql-request'
 import { ADD_PROJECT, DEPLOY } from './mutations'
@@ -106,6 +107,22 @@ export class ProjectService {
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
+  }
+
+  async generateProjectToken(projectId: number, temporary: boolean = true) {
+    const project = await this.prismaBinding.query.project(
+      {
+        where: {
+          id: projectId,
+        },
+      },
+      '{providedName generatedName stage}',
+    )
+    return jwt.sign(
+      { project: project.providedName, stage: project.stage },
+      project.generatedName + process.env.FOXCMS_SECRET + project.stage,
+      { expiresIn: temporary ? 3600 : '1y' },
+    )
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string) {
