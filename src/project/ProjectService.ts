@@ -50,7 +50,7 @@ export class ProjectService {
   async addContentType(project: Project, typeName: string): Promise<string> {
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addType(typeName)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -66,7 +66,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -84,7 +84,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addField(contentType.name, field)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -104,7 +104,7 @@ export class ProjectService {
       contentType.name,
       contentTypeField.name,
     )
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -120,17 +120,17 @@ export class ProjectService {
     )
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
-      project.generatedName + process.env.FOXCMS_SECRET + project.stage,
+      process.env.FOXCMS_SECRET + projectId,
       { expiresIn: temporary ? '1h' : '1y' },
     )
   }
 
-  private async deploy(projectName: string, stage: string, datamodel: string) {
+  private async deploy(project: Project, stage: string, datamodel: string) {
     await request(`${this.prismaServerEndpoint.origin}/management`, DEPLOY, {
-      projectName,
+      projectName: project.generatedName,
       stage,
       types: datamodel,
-      secrets: projectName + process.env.FOXCMS_SECRET + stage,
+      secrets: process.env.FOXCMS_SECRET + project.id,
     })
   }
 
