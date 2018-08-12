@@ -1,31 +1,49 @@
 import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from './UserService'
+import { AuthService } from '../auth/AuthService'
+import * as bcrypt from 'bcrypt'
+import User from './User'
 
 @Resolver('User')
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly projectService: ProjectService,
   ) {}
 
   @Query()
-  user(obj, { email }, context, info) {
-    return this.userService.getUser(email, info)
+  async login(obj, { username, password }, context, info) {
+    const user = (await this.userService.getUser(
+      username,
+      '{username imageUri password salt projects{providedName generatedName stage}}',
+    )) as User
+    if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
+      throw new Error('You have entered an invalid username or password')
+    }
+    return this.authService.createToken({
+      username: user.username,
+      imageUri: user.imageUri,
+      projects: user.projects,
+    })
   }
 
   @Mutation()
-  async createUser(obj, { email }, context, info) {
-    const user = await context.prisma.mutation.createUser(
+  async signup(obj, { username, password }, context, info) {
+    const salt = bcrypt.genSaltSync()
+    const user = (await context.prisma.mutation.createUser(
       {
         data: {
-          email,
+          username,
+          password: bcrypt.hashSync(password, salt),
+          salt,
         },
       },
-      info,
-    )
+      '{username projects imageUri {id}}',
+    )) as User
     const projectName = await this.projectService.buildProject()
-    await context.prisma.mutation.createProject(
+    const project = await context.prisma.mutation.createProject(
       {
         data: {
           user: {
@@ -33,13 +51,17 @@ export class UserResolver {
               id: user.id,
             },
           },
-          providedName: 'demo-project',
+          providedName: 'initial-project',
           generatedName: projectName,
-          stage: 'dev',
+          stage: 'Production',
         },
       },
-      info,
+      '{providedName generatedName stage}',
     )
-    return user
+    user.projects.push(project)
+    return this.authService.createToken({
+      username: user.username,
+      projects: user.projects,
+    })
   }
 }

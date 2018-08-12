@@ -6,12 +6,13 @@ mutation addProject($name: String!, $stage: String!) {
 }`
 
 const DEPLOY = `
-mutation deploy($projectName: String!, $stage: String!, $types: String!) {
+mutation deploy($projectName: String!, $stage: String!, $types: String!, $secrets: [String!]) {
   deploy(
     input: {
       name: $projectName
       stage: $stage
       types: $types
+      secrets: $secrets
     }
   ) {
     errors {

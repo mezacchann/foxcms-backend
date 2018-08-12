@@ -6,6 +6,7 @@ input ContentTypeFieldCreateInput {
 }
 type Query {
   getProject(id: ID!): Project
+  generatePermToken(projectId: ID!): String!
 }
 type Mutation {
   createProject(userId: ID!, name: String!): Project!

@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common'
+import * as jwt from 'jsonwebtoken'
 import { generate } from 'randomstring'
-import { request } from 'graphql-request'
+import { request, GraphQLClient } from 'graphql-request'
 import { ADD_PROJECT, DEPLOY } from './mutations'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
@@ -10,8 +11,17 @@ import { ContentTypeService } from '../content-type/ContentTypeService'
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+  managementApiClient = new GraphQLClient(
+    `${this.prismaServerEndpoint.origin}/management`,
+    {
+      headers: {
+        Authorization: `Bearer ${this.prismaManagementToken}`,
+      },
+    },
+  )
   constructor(
     @Inject('PrismaBinding') private prismaBinding,
+    @Inject('PrismaManagementToken') private prismaManagementToken,
     private contentTypeService: ContentTypeService,
   ) {}
 
@@ -26,27 +36,26 @@ export class ProjectService {
     )
   }
 
-  async buildProject(stage: string = 'dev', secret?: string): Promise<string> {
+  async buildProject(
+    stage: string = 'Production',
+    secret?: string,
+  ): Promise<string> {
     const projectName = generate({
       length: 7,
       readable: true,
       charset: 'alphabetic',
     })
-    await request(
-      `${this.prismaServerEndpoint.origin}/management`,
-      ADD_PROJECT,
-      {
-        name: projectName,
-        stage,
-      },
-    )
+    await this.managementApiClient.request(ADD_PROJECT, {
+      name: projectName,
+      stage,
+    })
     return projectName
   }
 
   async addContentType(project: Project, typeName: string): Promise<string> {
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addType(typeName)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -62,7 +71,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -80,7 +89,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addField(contentType.name, field)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -100,16 +109,33 @@ export class ProjectService {
       contentType.name,
       contentTypeField.name,
     )
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.deploy(project, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
 
-  private async deploy(projectName: string, stage: string, datamodel: string) {
-    await request(`${this.prismaServerEndpoint.origin}/management`, DEPLOY, {
-      projectName,
+  async generateProjectToken(projectId: number, temporary: boolean = true) {
+    const project = await this.prismaBinding.query.project(
+      {
+        where: {
+          id: projectId,
+        },
+      },
+      '{providedName generatedName stage}',
+    )
+    return jwt.sign(
+      { project: project.providedName, stage: project.stage },
+      process.env.FOXCMS_SECRET + projectId,
+      { expiresIn: temporary ? '1h' : '1y' },
+    )
+  }
+
+  private async deploy(project: Project, stage: string, datamodel: string) {
+    await this.managementApiClient.request(DEPLOY, {
+      projectName: project.generatedName,
       stage,
       types: datamodel,
+      secrets: process.env.FOXCMS_SECRET + project.id,
     })
   }
 

@@ -1,12 +1,15 @@
 type User {
   id: ID! @unique
-  email: String! @unique
-  projects: [Project!]!
+  username: String! @unique
+  password: String!
+  salt: String!
+  imageUri: String
+  projects: [Project!]! @relation(name: "UserProjects", onDelete: CASCADE)
 }
 
 type Project {
   id: ID! @unique
-  user: User!
+  user: User! @relation(name: "UserProjects")
   types: [ContentType!]!
   providedName: String!
   generatedName: String!
