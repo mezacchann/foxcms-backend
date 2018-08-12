@@ -45,7 +45,7 @@ export class UserResolver {
           salt,
         },
       },
-      '{username projects imageUri {id}}',
+      '{id username imageUri}',
     )) as User
     const projectName = await this.projectService.buildProject()
     const project = await context.prisma.mutation.createProject(
@@ -61,12 +61,15 @@ export class UserResolver {
           stage: 'Production',
         },
       },
-      '{providedName generatedName stage}',
+      '{id}',
+    )
+    const projectToken = await this.projectService.generateProjectToken(
+      project.id,
     )
     return this.authService.createToken({
       username: user.username,
       project,
-      projectToken: '',
+      projectToken,
     })
   }
 }

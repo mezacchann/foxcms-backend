@@ -45,13 +45,14 @@ export class ProjectService {
       name: projectName,
       stage,
     })
+    await this.deploy(projectName, stage, 'type Initial{id: ID}')
     return projectName
   }
 
   async addContentType(project: Project, typeName: string): Promise<string> {
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addType(typeName)
-    await this.deploy(project, project.stage, modifiedDatamodel)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -67,7 +68,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
-    await this.deploy(project, project.stage, modifiedDatamodel)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -85,7 +86,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addField(contentType.name, field)
-    await this.deploy(project, project.stage, modifiedDatamodel)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -105,7 +106,7 @@ export class ProjectService {
       contentType.name,
       contentTypeField.name,
     )
-    await this.deploy(project, project.stage, modifiedDatamodel)
+    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -126,12 +127,12 @@ export class ProjectService {
     )
   }
 
-  private async deploy(project: Project, stage: string, datamodel: string) {
+  private async deploy(projectName: string, stage: string, datamodel: string) {
     await this.managementApiClient.request(DEPLOY, {
-      projectName: project.generatedName,
+      projectName,
       stage,
       types: datamodel,
-      secrets: process.env.FOXCMS_SECRET + project.id,
+      secrets: process.env.FOXCMS_SECRET + projectName,
     })
   }
 
