@@ -4,6 +4,9 @@
   "description": "CMS Backend",
   "author": "Waldemar Penner",
   "license": "MIT",
+  "engines": {
+    "node": "10.8.0"
+  },
   "scripts": {
     "format": "prettier --write \"**/*.ts\"",
     "start": "npm run start:prod",
