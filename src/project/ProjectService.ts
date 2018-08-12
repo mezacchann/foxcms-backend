@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common'
 import * as jwt from 'jsonwebtoken'
-import { generate } from 'randomstring'
-import { request, GraphQLClient } from 'graphql-request'
+import { GraphQLClient } from 'graphql-request'
+import * as scuid from 'scuid'
 import { ADD_PROJECT, DEPLOY } from './mutations'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
@@ -40,11 +40,7 @@ export class ProjectService {
     stage: string = 'Production',
     secret?: string,
   ): Promise<string> {
-    const projectName = generate({
-      length: 7,
-      readable: true,
-      charset: 'alphabetic',
-    })
+    const projectName = scuid()
     await this.managementApiClient.request(ADD_PROJECT, {
       name: projectName,
       stage,
