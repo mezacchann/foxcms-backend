@@ -17,15 +17,20 @@ export class UserResolver {
   async login(obj, { username, password }, context, info) {
     const user = (await this.userService.getUser(
       username,
-      '{username imageUri password salt projects{providedName generatedName stage}}',
+      '{username imageUri password salt projects{id providedName generatedName stage}}',
     )) as User
     if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
       throw new Error('You have entered an invalid username or password')
     }
+    const firstProject = user.projects[0]
+    const projectToken = await this.projectService.generateProjectToken(
+      firstProject.id,
+    )
     return this.authService.createToken({
       username: user.username,
       imageUri: user.imageUri,
-      projects: user.projects,
+      project: firstProject,
+      projectToken,
     })
   }
 
@@ -58,10 +63,10 @@ export class UserResolver {
       },
       '{providedName generatedName stage}',
     )
-    user.projects.push(project)
     return this.authService.createToken({
       username: user.username,
-      projects: user.projects,
+      project,
+      projectToken: '',
     })
   }
 }
