@@ -21,7 +21,7 @@ export class AppModule implements NestModule {
     @Inject('PrismaBinding') private prismaBinding,
   ) {}
   configure(consumer: MiddlewareConsumer) {
-    const typeDefs = this.graphQLFactory.mergeTypesByPaths('./**/*.graphql')
+    const typeDefs = this.graphQLFactory.mergeTypesByPaths('./src/**/*.graphql')
     const schema = this.graphQLFactory.createSchema({ typeDefs })
     const prisma = this.prismaBinding
     consumer
