@@ -13,6 +13,18 @@ export class ProjectResolver {
   ) {}
 
   @Query()
+  async getProject(obj, { id }, context, info) {
+    return context.prisma.query.project(
+      {
+        where: {
+          id,
+        },
+      },
+      info,
+    )
+  }
+
+  @Query()
   async generatePermToken(obj, { projectId }, context, info) {
     return this.projectService.generateProjectToken(projectId, false)
   }
