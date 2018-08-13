@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Query } from '@nestjs/graphql'
+import { Resolver, Query } from '@nestjs/graphql'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from './UserService'
 import { AuthService } from '../auth/AuthService'
@@ -34,7 +34,7 @@ export class UserResolver {
     })
   }
 
-  @Mutation()
+  @Query()
   async signup(obj, { username, password }, context, info) {
     const salt = bcrypt.genSaltSync()
     const user = (await context.prisma.mutation.createUser(
