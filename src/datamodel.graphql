@@ -37,7 +37,12 @@ type ContentTypeField {
 
 enum ContentTypeFieldType {
   String
+  Text
   Int
   Float
-  Boolean
+  Checkbox
+  Date
+  Json
+  Image
+  File
 }

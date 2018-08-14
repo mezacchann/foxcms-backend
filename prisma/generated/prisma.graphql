@@ -1,5 +1,5 @@
 # source: https://prisma-server.dokku.wpr-dev.com/foxcms/dev
-# timestamp: Sun Aug 12 2018 10:02:42 GMT+1000 (Ostaustralische Normalzeit)
+# timestamp: Tue Aug 14 2018 13:31:26 GMT+1000 (Ostaustralische Normalzeit)
 
 type AggregateContentType {
   count: Int!
@@ -186,9 +186,14 @@ input ContentTypeFieldSubscriptionWhereInput {
 
 enum ContentTypeFieldType {
   String
+  Text
   Int
   Float
-  Boolean
+  Checkbox
+  Date
+  Json
+  Image
+  File
 }
 
 input ContentTypeFieldUpdateInput {
