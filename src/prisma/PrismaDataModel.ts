@@ -24,7 +24,7 @@ export class PrismaDataModel {
 
   addType(typeName: string): string {
     this.validator.isTypeCreatable(typeName)
-    const typeTemplate = `type ${typeName} {id: ID! @unique}`
+    const typeTemplate = `type ${typeName} {id: ID! @unique }`
     this.datamodel.content += typeTemplate
     return this.datamodel.content
   }
@@ -53,24 +53,24 @@ export class PrismaDataModel {
     const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
     const result =
       this.datamodel.content.slice(0, idx) +
-      ` ${name}: ${type}${isRequired ? '!' : ''}` +
+      `${name}: ${type}${isRequired ? '!' : ''} ` +
       this.datamodel.content.slice(idx)
     return result
   }
 
   deleteType(contentTypeName: string): string {
     this.validator.isTypeDeletable(contentTypeName)
-    const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
+    const regex = new RegExp(`type ${contentTypeName} \\{.*?\\}`)
     this.datamodel.content = this.datamodel.content.replace(regex, '')
     return this.datamodel.content
   }
 
   deleteContentTypeField(contentTypeName: string, fieldName: string): string {
     this.validator.isFieldDeletable(contentTypeName, fieldName)
-    const regex = new RegExp(`type ${contentTypeName} \\{[^{}]*\\}`)
+    const regex = new RegExp(`type ${contentTypeName} \\{.*?\\}`)
     const matchedContent = this.datamodel.content.match(regex)[0]
     const typeWithRemovedField = matchedContent.replace(
-      new RegExp(`[^\S\r\n]*${fieldName}.*\n`),
+      new RegExp(`${fieldName}:\\s.*?\\s`),
       '',
     )
     this.datamodel.content = this.datamodel.content.replace(

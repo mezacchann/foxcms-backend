@@ -74,7 +74,7 @@ export class Validator {
   }
 
   private typeExists(typeName: string): boolean {
-    const regex = new RegExp(`type.*${typeName}.*{`)
+    const regex = new RegExp(`type ${typeName} \{.*?\}`)
     const result = this.datamodel.content.match(regex)
     return result !== null
   }
