@@ -36,10 +36,7 @@ export class ProjectService {
     )
   }
 
-  async buildProject(
-    stage: string = 'Production',
-    secret?: string,
-  ): Promise<string> {
+  async buildProject(stage: string = 'Production'): Promise<string> {
     const projectName = scuid()
     await this.managementApiClient.request(ADD_PROJECT, {
       name: projectName,
@@ -122,7 +119,7 @@ export class ProjectService {
     )
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
-      process.env.FOXCMS_SECRET + projectId,
+      process.env.FOXCMS_SECRET + project.generatedName,
       { expiresIn: temporary ? '1h' : '1y' },
     )
   }
