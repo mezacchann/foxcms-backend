@@ -18,6 +18,7 @@
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest -i",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "lint": "tslint -c ./tslint.json './src/**/*.ts'",
     "webpack": "webpack --config webpack.config.js"
   },
   "dependencies": {
