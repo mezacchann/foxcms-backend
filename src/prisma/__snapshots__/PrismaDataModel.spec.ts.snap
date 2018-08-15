@@ -4,8 +4,8 @@ exports[`PrismaDataModel Add a new content type to the data model Should add a n
 
 exports[`PrismaDataModel Add a new field to a content type Should add new fields to a content type 1`] = `"type photo {id: ID! @unique width: Float! height: Float! size: Float uri: String! }"`;
 
-exports[`PrismaDataModel Delete a content type field from the data model Delete a content type field from the data model 1`] = `"type photo {id: ID! @unique size: Float uri: String! }"`;
+exports[`PrismaDataModel Delete a content type field from the data model Should delete a content type field from the data model 1`] = `"type photo {id: ID! @unique size: Float uri: String! }"`;
 
 exports[`PrismaDataModel Delete a content type from the data model Delete the content type from the data model 1`] = `"type photo {id: ID! @unique }type photo3 {id: ID! @unique }"`;
 
-exports[`PrismaDataModel Update a content type Update the content type name 1`] = `"type photo {id: ID! @unique }type photo2_NEWNAME {id: ID! @unique }type photo3 {id: ID! @unique }"`;
+exports[`PrismaDataModel Update a content type Should update the content type name 1`] = `"type photo {id: ID! @unique }type photo2_NEWNAME {id: ID! @unique }type photo3 {id: ID! @unique }"`;

@@ -1,6 +1,4 @@
 import { PrismaDataModel } from './PrismaDataModel'
-import { Test } from '@nestjs/testing'
-import ContentTypeField from '../content-type/ContentTypeField'
 
 describe('PrismaDataModel', () => {
   let prismaDataModel: PrismaDataModel
@@ -95,7 +93,7 @@ describe('PrismaDataModel', () => {
       prismaDataModel.addType('photo')
       expect(() =>
         prismaDataModel.addField('photo', {
-          name: 'wi dth',
+          name: '1width',
           type: 'String',
           isRequired: true,
         }),
@@ -119,7 +117,7 @@ describe('PrismaDataModel', () => {
   })
 
   describe('Update a content type', () => {
-    it('Update the content type name', () => {
+    it('Should update the content type name', () => {
       prismaDataModel.addType('photo')
       prismaDataModel.addType('photo2')
       prismaDataModel.addType('photo3')
@@ -130,7 +128,14 @@ describe('PrismaDataModel', () => {
       expect(result).toMatchSnapshot()
     })
 
-    it('Should throw an error when updating with an invalid name', () => {
+    it('Should throw an error when update a non existent content type', () => {
+      prismaDataModel.addType('photo')
+      expect(() =>
+        prismaDataModel.updateContentTypeName('phot1o', 'photo'),
+      ).toThrow()
+    })
+
+    it('Should throw an error when update to an invalid type name', () => {
       prismaDataModel.addType('photo')
       expect(() =>
         prismaDataModel.updateContentTypeName('photo', 'pho to'),
@@ -139,17 +144,10 @@ describe('PrismaDataModel', () => {
         prismaDataModel.updateContentTypeName('photo', '1photo'),
       ).toThrow()
     })
-
-    it('Should throw an error when trying to update an not existent type', () => {
-      prismaDataModel.addType('photo')
-      expect(() =>
-        prismaDataModel.updateContentTypeName('photo2', 'photo'),
-      ).toThrow()
-    })
   })
 
   describe('Delete a content type field from the data model', () => {
-    it('Delete a content type field from the data model', () => {
+    it('Should delete a content type field from the data model', () => {
       prismaDataModel.addType('photo')
       prismaDataModel.addField('photo', {
         name: 'width',
@@ -176,7 +174,7 @@ describe('PrismaDataModel', () => {
       expect(result).toMatchSnapshot()
     })
 
-    it('Throw an error when deleting an not existent content type field', () => {
+    it('Should throw an error when deleting an not existent content type field', () => {
       prismaDataModel.addType('photo')
       prismaDataModel.addField('photo', {
         name: 'width',
