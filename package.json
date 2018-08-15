@@ -8,7 +8,9 @@
     "node": "10.8.0"
   },
   "scripts": {
+    "lint": "tslint -c ./tslint.json './src/**/*.ts'",
     "format": "prettier --write \"**/*.ts\"",
+    "build": "tsc",
     "start": "npm run start:prod",
     "start:dev": "nodemon",
     "prestart:prod": "rm -rf dist && tsc",
@@ -18,7 +20,6 @@
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest -i",
     "test:cov": "jest --coverage",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "lint": "tslint -c ./tslint.json './src/**/*.ts'",
     "webpack": "webpack --config webpack.config.js"
   },
   "dependencies": {
