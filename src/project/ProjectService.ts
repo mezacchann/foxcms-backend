@@ -7,10 +7,12 @@ import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
+import * as NodeCache from 'node-cache'
 
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+  tokenCache = new NodeCache({ stdTTL: 3600 })
   managementApiClient = new GraphQLClient(
     `${this.prismaServerEndpoint.origin}/management`,
     {
@@ -120,11 +122,17 @@ export class ProjectService {
     if (!project) {
       throw new Error(`Project ${generatedName} doesn't exist`)
     }
-    return jwt.sign(
-      { project: project.providedName, stage: project.stage },
-      process.env.FOXCMS_SECRET + project.generatedName,
-      { expiresIn: '1h' },
-    )
+    if (this.tokenCache.get(project.generatedName)) {
+      return this.tokenCache.get(project.generatedName)
+    } else {
+      const token = jwt.sign(
+        { project: project.providedName, stage: project.stage },
+        process.env.FOXCMS_SECRET + project.generatedName,
+        { expiresIn: '1h' },
+      )
+      this.tokenCache.set(project.generatedName, token)
+      return token
+    }
   }
 
   async generateProjectToken(projectId: number, temporary: boolean = true) {
