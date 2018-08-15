@@ -108,6 +108,25 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
+  async generateTempProjectToken(generatedName: string) {
+    const project = await this.prismaBinding.query.project(
+      {
+        where: {
+          generatedName,
+        },
+      },
+      '{providedName generatedName stage}',
+    )
+    if (!project) {
+      throw new Error(`Project ${generatedName} doesn't exist`)
+    }
+    return jwt.sign(
+      { project: project.providedName, stage: project.stage },
+      process.env.FOXCMS_SECRET + project.generatedName,
+      { expiresIn: '1h' },
+    )
+  }
+
   async generateProjectToken(projectId: number, temporary: boolean = true) {
     const project = await this.prismaBinding.query.project(
       {

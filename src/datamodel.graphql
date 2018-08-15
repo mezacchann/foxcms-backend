@@ -12,7 +12,7 @@ type Project {
   user: User! @relation(name: "UserProjects")
   types: [ContentType!]!
   providedName: String!
-  generatedName: String!
+  generatedName: String! @unique
   stage: String!
   secret: String
   datamodel: String! @default(value: "")

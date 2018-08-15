@@ -1,5 +1,5 @@
 # source: https://prisma-server.dokku.wpr-dev.com/foxcms/dev
-# timestamp: Tue Aug 14 2018 13:31:26 GMT+1000 (Ostaustralische Normalzeit)
+# timestamp: Wed Aug 15 2018 11:41:10 GMT+1000 (Ostaustralische Normalzeit)
 
 type AggregateContentType {
   count: Int!
@@ -1101,6 +1101,7 @@ input ProjectWhereInput {
 
 input ProjectWhereUniqueInput {
   id: ID
+  generatedName: String
 }
 
 type Query {
