@@ -10,11 +10,8 @@ cache:
   paths:
     - node_modules/
 
-# Wird vor jeder stage ausgeführt.
 before_script:
-  # Nun stellen wir nochmal sicher, dass alle npm-Pakete im Cache vorhanden sind
   - npm install
-  # und löschen die überzähligen
   - npm prune
 
 compile:
