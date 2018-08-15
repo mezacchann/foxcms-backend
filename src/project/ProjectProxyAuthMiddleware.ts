@@ -29,7 +29,7 @@ export class ProjectProxyAuthMiddleware implements NestMiddleware {
             jwtPayload as JwtPayload,
           )
           const paths = req.url.split('/')
-          if (!paths || paths.length < 2) {
+          if (!paths || paths.length < 3) {
             return new Error('Invalid path')
           }
           const projectToken = await this.projectService.generateTempProjectToken(
