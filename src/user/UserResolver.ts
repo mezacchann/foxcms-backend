@@ -4,6 +4,7 @@ import { UserService } from './UserService'
 import { AuthService } from '../auth/AuthService'
 import * as bcrypt from 'bcrypt'
 import User from './User'
+import { Project } from 'project/Project'
 
 @Resolver('User')
 export class UserResolver {
@@ -22,7 +23,7 @@ export class UserResolver {
     if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
       throw new Error('You have entered an invalid username or password')
     }
-    const firstProject = user.projects[0]
+    const firstProject = user.projects[0] as Project
     return this.authService.createToken({
       username: user.username,
       imageUri: user.imageUri,
@@ -44,7 +45,7 @@ export class UserResolver {
       '{id username imageUri}',
     )) as User
     const projectName = await this.projectService.buildProject()
-    const project = await context.prisma.mutation.createProject(
+    const project = (await context.prisma.mutation.createProject(
       {
         data: {
           user: {
@@ -58,7 +59,7 @@ export class UserResolver {
         },
       },
       '{id}',
-    )
+    )) as Project
     return this.authService.createToken({
       username: user.username,
       project: project.id,
