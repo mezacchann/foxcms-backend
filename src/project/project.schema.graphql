@@ -4,8 +4,13 @@ input ContentTypeFieldCreateInput {
   type: ContentTypeFieldType
   isRequired: Boolean
 }
+type ProjectWithToken {
+  project: Project
+  token: String
+}
 type Query {
   getProject(id: ID!): Project
+  getProjectWithToken(id: ID!): ProjectWithToken
   generatePermToken(projectId: ID!): String!
 }
 type Mutation {

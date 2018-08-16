@@ -3,6 +3,7 @@ import { UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
+import { Project } from './Project'
 
 @Resolver('Project')
 @UseGuards(AuthGuard('jwt'))
@@ -14,14 +15,20 @@ export class ProjectResolver {
 
   @Query()
   async getProject(obj, { id }, context, info) {
-    return context.prisma.query.project(
-      {
-        where: {
-          id,
-        },
-      },
-      info,
-    )
+    return this.projectService.getProject(id, info)
+  }
+
+  @Query()
+  async getProjectWithToken(obj, { id }, context, info) {
+    const project = (await this.projectService.getProject(id, info)) as Project
+    if (!project) {
+      throw new Error(`Project with id ${id} doesn't exist`)
+    }
+    const token = await this.projectService.generateProjectToken(id)
+    return {
+      project,
+      token,
+    }
   }
 
   @Query()
