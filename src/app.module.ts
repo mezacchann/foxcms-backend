@@ -5,8 +5,6 @@ import { UserModule } from './user/UserModule'
 import { ContentTypeModule } from './content-type/ContentTypeModule'
 import { PrismaModule } from './prisma/PrismaModule'
 import { AuthModule } from './auth/AuthModule'
-import { ProjectProxyMiddleware } from './project/ProjectProxyMiddleware'
-import { ProjectProxyAuthMiddleware } from './project/ProjectProxyAuthMiddleware'
 import { ProjectModule } from './project/ProjectModule'
 
 @Module({
@@ -40,7 +38,5 @@ export class AppModule implements NestModule {
         })),
       )
       .forRoutes('/graphql')
-      .apply(ProjectProxyAuthMiddleware, ProjectProxyMiddleware)
-      .forRoutes('/project')
   }
 }
