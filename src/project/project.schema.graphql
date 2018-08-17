@@ -10,8 +10,8 @@ type ProjectWithToken {
 }
 type Query {
   getProject(id: ID!): Project
-  getProjectWithToken(id: ID!): ProjectWithToken
-  generatePermToken(projectId: ID!): String!
+  getProjectWithToken(id: ID): ProjectWithToken
+  generatePermToken(id: ID!): String!
 }
 type Mutation {
   createProject(userId: ID!, name: String!): Project!

@@ -7,12 +7,12 @@ import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import { Project } from './Project'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
-import * as NodeCache from 'node-cache'
+import User from 'user/User'
+import { ContentType } from 'content-type/ContentType'
 
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-  tokenCache = new NodeCache({ stdTTL: 3600 })
   managementApiClient = new GraphQLClient(
     `${this.prismaServerEndpoint.origin}/management`,
     {
@@ -27,7 +27,23 @@ export class ProjectService {
     private contentTypeService: ContentTypeService,
   ) {}
 
-  getProject(id: number, info: string = '{id}') {
+  private async checkUserPermission(projectId: number, user: User) {
+    if (
+      await this.prismaBinding.exists.Project({
+        id: projectId,
+        user: { id: user.id },
+      })
+    ) {
+      return new Error(`Cannot find project ${projectId}`)
+    }
+  }
+
+  async getProject(
+    id: number,
+    user: User,
+    info: string = '{id}',
+  ): Promise<Project> {
+    this.checkUserPermission(id, user)
     return this.prismaBinding.query.project(
       {
         where: {
@@ -56,14 +72,15 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async deleteContentType(id: number) {
-    const contentType = await this.contentTypeService.getContentType(
+  async deleteContentType(id: number, user: User) {
+    const contentType = (await this.contentTypeService.getContentType(
       id,
       '{name project{id generatedName stage datamodel}}',
-    )
+    )) as ContentType
     if (!contentType) {
       throw new Error(`Content type with id ${id} doesnt exist`)
     }
+    this.checkUserPermission(contentType.project.id, user)
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
@@ -72,7 +89,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async addContentTypeField(field: ContentTypeFieldCreateInput) {
+  async addContentTypeField(field: ContentTypeFieldCreateInput, user: User) {
     const contentType = await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
@@ -82,6 +99,7 @@ export class ProjectService {
         `Content type with id ${field.contentTypeId} doesnt exist`,
       )
     }
+    this.checkUserPermission(contentType.project.id, user)
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
     const modifiedDatamodel = datamodel.addField(contentType.name, field)
@@ -90,7 +108,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async deleteContentTypeField(id: number) {
+  async deleteContentTypeField(id: number, user: User) {
     const contentTypeField = await this.contentTypeService.getContentTypeField(
       id,
       '{name contentType{name project{id generatedName stage datamodel}}}',
@@ -98,6 +116,7 @@ export class ProjectService {
     if (!contentTypeField) {
       throw new Error(`Content type field with id ${id} doesnt exist`)
     }
+    this.checkUserPermission(contentTypeField.project.id, user)
     const { contentType } = contentTypeField
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
@@ -110,40 +129,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async generateTempProjectToken(generatedName: string) {
-    const project = await this.prismaBinding.query.project(
-      {
-        where: {
-          generatedName,
-        },
-      },
-      '{providedName generatedName stage}',
-    )
-    if (!project) {
-      throw new Error(`Project ${generatedName} doesn't exist`)
-    }
-    if (this.tokenCache.get(project.generatedName)) {
-      return this.tokenCache.get(project.generatedName)
-    } else {
-      const token = jwt.sign(
-        { project: project.providedName, stage: project.stage },
-        process.env.FOXCMS_SECRET + project.generatedName,
-        { expiresIn: '1h' },
-      )
-      this.tokenCache.set(project.generatedName, token)
-      return token
-    }
-  }
-
-  async generateProjectToken(projectId: number, temporary: boolean = true) {
-    const project = await this.prismaBinding.query.project(
-      {
-        where: {
-          id: projectId,
-        },
-      },
-      '{providedName generatedName stage}',
-    )
+  async generateProjectToken(project: Project, temporary: boolean = true) {
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
       process.env.FOXCMS_SECRET + project.generatedName,

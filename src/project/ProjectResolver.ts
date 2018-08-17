@@ -14,17 +14,14 @@ export class ProjectResolver {
   ) {}
 
   @Query()
-  async getProject(obj, { id }, context, info) {
-    return this.projectService.getProject(id, info)
+  getProject(obj, { id }, context, info) {
+    return this.projectService.getProject(id, obj.user, info)
   }
 
   @Query()
   async getProjectWithToken(obj, { id }, context, info) {
-    const project = (await this.projectService.getProject(id, info)) as Project
-    if (!project) {
-      throw new Error(`Project with id ${id} doesn't exist`)
-    }
-    const token = await this.projectService.generateProjectToken(id)
+    const project = await this.projectService.getProject(id, obj.user)
+    const token = await this.projectService.generateProjectToken(id, obj.user)
     return {
       project,
       token,
@@ -32,8 +29,13 @@ export class ProjectResolver {
   }
 
   @Query()
-  async generatePermToken(obj, { projectId }, context, info) {
-    return this.projectService.generateProjectToken(projectId, false)
+  async generatePermToken(obj, { id }, context, info) {
+    const project = await this.projectService.getProject(
+      id,
+      obj.user,
+      '{providedName generatedName stage}',
+    )
+    return this.projectService.generateProjectToken(project, false)
   }
 
   @Mutation()
@@ -69,6 +71,7 @@ export class ProjectResolver {
   ) {
     const project = await this.projectService.getProject(
       projectId,
+      obj.user,
       `{
       id
       generatedName
@@ -76,9 +79,6 @@ export class ProjectResolver {
       datamodel
      }`,
     )
-    if (!project) {
-      throw new Error(`Project with id ${projectId} doesn't exist`)
-    }
     await this.projectService.addContentType(project, contentTypeName)
     return context.prisma.mutation.createContentType(
       {
@@ -98,7 +98,7 @@ export class ProjectResolver {
 
   @Mutation()
   async deleteContentType(obj, { id }, context, info) {
-    await this.projectService.deleteContentType(id)
+    await this.projectService.deleteContentType(id, obj.user)
     return context.prisma.mutation.deleteContentType(
       {
         where: {
@@ -111,7 +111,7 @@ export class ProjectResolver {
 
   @Mutation()
   async addContentTypeField(obj, { contentTypeField }, context, info) {
-    await this.projectService.addContentTypeField(contentTypeField)
+    await this.projectService.addContentTypeField(contentTypeField, obj.user)
     return context.prisma.mutation.createContentTypeField(
       {
         data: {
@@ -131,7 +131,7 @@ export class ProjectResolver {
 
   @Mutation()
   async deleteContentTypeField(obj, { id }, context, info) {
-    await this.projectService.deleteContentTypeField(id)
+    await this.projectService.deleteContentTypeField(id, obj.user)
     return context.prisma.mutation.deleteContentTypeField(
       {
         where: {
