@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
 import { Project } from './Project'
+import User from 'user/User'
 
 @Resolver('Project')
 @UseGuards(AuthGuard('jwt'))
@@ -20,8 +21,27 @@ export class ProjectResolver {
 
   @Query()
   async getProjectWithToken(obj, { id }, context, info) {
-    const project = await this.projectService.getProject(id, obj.user)
-    const token = await this.projectService.generateProjectToken(id, obj.user)
+    let project
+    if (id) {
+      project = await this.projectService.getProject(
+        id,
+        obj.user,
+        '{id providedName generatedName stage}',
+      )
+    } else {
+      const user = (await this.userService.getUserById(
+        obj.user.id,
+        '{projects {id providedName generatedName stage}}',
+      )) as User
+      project = user.projects[0]
+    }
+    if (!project) {
+      throw new Error('User has no projects')
+    }
+    const token = await this.projectService.generateProjectToken(
+      project,
+      obj.user,
+    )
     return {
       project,
       token,
