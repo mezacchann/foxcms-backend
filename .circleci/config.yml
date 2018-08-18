@@ -58,3 +58,9 @@ jobs:
             curl -I http://localhost:4466/ds/dev
           environment:
             PRISMA_SECRET: very-secret
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test
