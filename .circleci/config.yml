@@ -54,8 +54,8 @@ jobs:
             docker-compose up -d
             docker ps
             npm install -g prisma
-            npm install -g npm@3
             cd ..
+            sudo apt-get install -y build-essential python 
             npm install
             npm build
             npm test
