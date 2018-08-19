@@ -9,6 +9,8 @@ import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateI
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import User from 'user/User'
 import { ContentType } from 'content-type/ContentType'
+import { Prisma } from 'prisma-binding'
+import { ContentTypeField } from 'content-type/ContentTypeField'
 
 @Injectable()
 export class ProjectService {
@@ -22,27 +24,23 @@ export class ProjectService {
     },
   )
   constructor(
-    @Inject('PrismaBinding') private prismaBinding,
-    @Inject('PrismaManagementToken') private prismaManagementToken,
+    @Inject('PrismaBinding') private prismaBinding: Prisma,
+    @Inject('PrismaManagementToken') private prismaManagementToken: string,
     private contentTypeService: ContentTypeService,
   ) {}
 
-  private async checkUserPermission(projectId: number, user: User) {
+  private async checkUserPermission(projectId: number, user: User): Promise<void> {
     if (
       await this.prismaBinding.exists.Project({
         id: projectId,
         user: { id: user.id },
       })
     ) {
-      return new Error(`Cannot find project ${projectId}`)
+      throw new Error(`Cannot find project ${projectId}`)
     }
   }
 
-  async getProject(
-    id: number,
-    user: User,
-    info: string = '{id}',
-  ): Promise<Project> {
+  async getProject(id: number, user: User, info: string = '{id}'): Promise<Project> {
     this.checkUserPermission(id, user)
     return this.prismaBinding.query.project(
       {
@@ -50,6 +48,7 @@ export class ProjectService {
           id,
         },
       },
+      undefined,
       info,
     )
   }
@@ -72,7 +71,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async deleteContentType(id: number, user: User) {
+  async deleteContentType(id: number, user: User): Promise<string> {
     const contentType = (await this.contentTypeService.getContentType(
       id,
       '{name project{id generatedName stage datamodel}}',
@@ -89,15 +88,16 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async addContentTypeField(field: ContentTypeFieldCreateInput, user: User) {
-    const contentType = await this.contentTypeService.getContentType(
+  async addContentTypeField(
+    field: ContentTypeFieldCreateInput,
+    user: User,
+  ): Promise<string> {
+    const contentType = (await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
-    )
+    )) as ContentType
     if (!contentType) {
-      throw new Error(
-        `Content type with id ${field.contentTypeId} doesnt exist`,
-      )
+      throw new Error(`Content type with id ${field.contentTypeId} doesnt exist`)
     }
     this.checkUserPermission(contentType.project.id, user)
     const { project } = contentType
@@ -108,15 +108,15 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async deleteContentTypeField(id: number, user: User) {
-    const contentTypeField = await this.contentTypeService.getContentTypeField(
+  async deleteContentTypeField(id: number, user: User): Promise<string> {
+    const contentTypeField = (await this.contentTypeService.getContentTypeField(
       id,
       '{name contentType{name project{id generatedName stage datamodel}}}',
-    )
+    )) as ContentTypeField
     if (!contentTypeField) {
       throw new Error(`Content type field with id ${id} doesnt exist`)
     }
-    this.checkUserPermission(contentTypeField.project.id, user)
+    this.checkUserPermission(contentTypeField.contentType.project.id, user)
     const { contentType } = contentTypeField
     const { project } = contentType
     const datamodel = new PrismaDataModel(project.datamodel)
@@ -129,7 +129,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async generateProjectToken(project: Project, temporary: boolean = true) {
+  generateProjectToken(project: Project, temporary: boolean = true): string {
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
       process.env.FOXCMS_SECRET + project.generatedName,
@@ -137,7 +137,11 @@ export class ProjectService {
     )
   }
 
-  private async deploy(projectName: string, stage: string, datamodel: string) {
+  private async deploy(
+    projectName: string,
+    stage: string,
+    datamodel: string,
+  ): Promise<void> {
     await this.managementApiClient.request(DEPLOY, {
       projectName,
       stage,
@@ -146,8 +150,8 @@ export class ProjectService {
     })
   }
 
-  private async updateProjectDatamodel(projectId, datamodel: string) {
-    await this.prismaBinding.mutation.updateProject(
+  private async updateProjectDatamodel(projectId, datamodel: string): Promise<Project> {
+    return this.prismaBinding.mutation.updateProject(
       {
         where: {
           id: projectId,
@@ -156,7 +160,8 @@ export class ProjectService {
           datamodel,
         },
       },
-      '',
+      undefined,
+      '{id}',
     )
   }
 }

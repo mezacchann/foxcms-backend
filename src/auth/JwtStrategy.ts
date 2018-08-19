@@ -2,6 +2,7 @@ import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt'
 import { AuthService } from './AuthService'
 import { PassportStrategy } from '@nestjs/passport'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { JwtPayload } from './JwtPayload'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(payload: any, done: VerifiedCallback) {
+  async validate(payload: JwtPayload, done: VerifiedCallback) {
     const user = await this.authService.validateUser(payload)
     if (!user) {
       done(new UnauthorizedException(), false)

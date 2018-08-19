@@ -5,6 +5,9 @@ import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
 import { Project } from './Project'
 import User from 'user/User'
+import { ProjectWithToken } from './ProjectWithToken'
+import { ContentType } from 'content-type/ContentType'
+import { ContentTypeField } from 'content-type/ContentTypeField'
 
 @Resolver('Project')
 @UseGuards(AuthGuard('jwt'))
@@ -15,19 +18,19 @@ export class ProjectResolver {
   ) {}
 
   @Query()
-  getProject(obj, { id }, context, info) {
+  getProject(obj, { id }, context, info): Promise<Project> {
     return this.projectService.getProject(id, obj.user, info)
   }
 
   @Query()
-  async getProjectWithToken(obj, { id }, context, info) {
+  async getProjectWithToken(obj, { id }, context, info): Promise<ProjectWithToken> {
     let project
     if (id) {
-      project = await this.projectService.getProject(
+      project = (await this.projectService.getProject(
         id,
         obj.user,
         '{id providedName generatedName stage}',
-      )
+      )) as Project
     } else {
       const user = (await this.userService.getUserById(
         obj.user.id,
@@ -38,10 +41,7 @@ export class ProjectResolver {
     if (!project) {
       throw new Error('User has no projects')
     }
-    const token = await this.projectService.generateProjectToken(
-      project,
-      obj.user,
-    )
+    const token = await this.projectService.generateProjectToken(project, obj.user)
     return {
       project,
       token,
@@ -49,18 +49,18 @@ export class ProjectResolver {
   }
 
   @Query()
-  async generatePermToken(obj, { id }, context, info) {
-    const project = await this.projectService.getProject(
+  async generatePermToken(obj, { id }, context, info): Promise<string> {
+    const project = (await this.projectService.getProject(
       id,
       obj.user,
       '{providedName generatedName stage}',
-    )
+    )) as Project
     return this.projectService.generateProjectToken(project, false)
   }
 
   @Mutation()
-  async createProject(obj, { userId, name }, context, info) {
-    const user = await this.userService.getUserById(userId)
+  async createProject(obj, { userId, name }, context, info): Promise<Project> {
+    const user = (await this.userService.getUserById(userId)) as User
     if (!user) {
       throw new Error(`User with id ${userId} does not exist`)
     }
@@ -88,8 +88,8 @@ export class ProjectResolver {
     { projectId, contentTypeName, description },
     context,
     info,
-  ) {
-    const project = await this.projectService.getProject(
+  ): Promise<ContentType> {
+    const project = (await this.projectService.getProject(
       projectId,
       obj.user,
       `{
@@ -98,7 +98,7 @@ export class ProjectResolver {
       stage
       datamodel
      }`,
-    )
+    )) as Project
     await this.projectService.addContentType(project, contentTypeName)
     return context.prisma.mutation.createContentType(
       {
@@ -117,7 +117,7 @@ export class ProjectResolver {
   }
 
   @Mutation()
-  async deleteContentType(obj, { id }, context, info) {
+  async deleteContentType(obj, { id }, context, info): Promise<ContentType> {
     await this.projectService.deleteContentType(id, obj.user)
     return context.prisma.mutation.deleteContentType(
       {
@@ -130,7 +130,12 @@ export class ProjectResolver {
   }
 
   @Mutation()
-  async addContentTypeField(obj, { contentTypeField }, context, info) {
+  async addContentTypeField(
+    obj,
+    { contentTypeField },
+    context,
+    info,
+  ): Promise<ContentTypeField> {
     await this.projectService.addContentTypeField(contentTypeField, obj.user)
     return context.prisma.mutation.createContentTypeField(
       {
@@ -150,7 +155,7 @@ export class ProjectResolver {
   }
 
   @Mutation()
-  async deleteContentTypeField(obj, { id }, context, info) {
+  async deleteContentTypeField(obj, { id }, context, info): Promise<ContentTypeField> {
     await this.projectService.deleteContentTypeField(id, obj.user)
     return context.prisma.mutation.deleteContentTypeField(
       {
