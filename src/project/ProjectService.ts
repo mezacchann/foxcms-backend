@@ -15,14 +15,11 @@ import { ContentTypeField } from 'content-type/ContentTypeField'
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-  managementApiClient = new GraphQLClient(
-    `${this.prismaServerEndpoint.origin}/management`,
-    {
-      headers: {
-        Authorization: `Bearer ${this.prismaManagementToken}`,
-      },
+  managementApiClient = new GraphQLClient(`${this.prismaServerEndpoint.origin}/management`, {
+    headers: {
+      Authorization: `Bearer ${this.prismaManagementToken}`,
     },
-  )
+  })
   constructor(
     @Inject('PrismaBinding') private prismaBinding: Prisma,
     @Inject('PrismaManagementToken') private prismaManagementToken: string,
@@ -30,11 +27,15 @@ export class ProjectService {
   ) {}
 
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
+    const res = await this.prismaBinding.exists.Project({
+      id: projectId,
+      user: { id: user.id },
+    })
     if (
-      await this.prismaBinding.exists.Project({
+      !(await this.prismaBinding.exists.Project({
         id: projectId,
         user: { id: user.id },
-      })
+      }))
     ) {
       throw new Error(`Cannot find project ${projectId}`)
     }
@@ -87,10 +88,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async addContentTypeField(
-    field: ContentTypeFieldCreateInput,
-    user: User,
-  ): Promise<string> {
+  async addContentTypeField(field: ContentTypeFieldCreateInput, user: User): Promise<string> {
     const contentType = (await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
@@ -136,11 +134,7 @@ export class ProjectService {
     )
   }
 
-  private async deploy(
-    projectName: string,
-    stage: string,
-    datamodel: string,
-  ): Promise<void> {
+  private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
     await this.managementApiClient.request(DEPLOY, {
       projectName,
       stage,
