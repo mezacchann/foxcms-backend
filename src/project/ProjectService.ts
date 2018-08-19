@@ -27,10 +27,6 @@ export class ProjectService {
   ) {}
 
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
-    const res = await this.prismaBinding.exists.Project({
-      id: projectId,
-      user: { id: user.id },
-    })
     if (
       !(await this.prismaBinding.exists.Project({
         id: projectId,
