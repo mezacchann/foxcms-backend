@@ -53,9 +53,13 @@ jobs:
             cd prisma
             docker-compose up -d
             docker ps
-
+            npm install -g prisma
+            cd ..
+            npm install
+            npm build
+            npm test
             sleep 20
-            curl -I http://localhost:4466/ds/dev
+            curl -I http://localhost:4466
           environment:
             PRISMA_SECRET: very-secret
 workflows:
