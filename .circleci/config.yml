@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.8
+      - image: circleci/node:10.9
 
     # Specify service dependencies here if necessary
     # CircleCI maintains a library of pre-built images
@@ -54,6 +54,7 @@ jobs:
             docker-compose up -d
             docker ps
             npm install -g prisma
+            npm install -g npm@3
             cd ..
             npm install
             npm build
