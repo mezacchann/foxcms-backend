@@ -1,6 +1,8 @@
+import { ContentTypeFieldType } from './ContentTypeFieldType'
+
 export default interface ContentTypeFieldCreateInput {
   contentTypeId?: number
   name: string
-  type: any
+  type: ContentTypeFieldType
   isRequired: boolean
 }

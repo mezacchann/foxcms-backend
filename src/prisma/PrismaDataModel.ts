@@ -6,15 +6,6 @@ export default interface Datamodel {
 }
 
 export class PrismaDataModel {
-  private readonly customTypeToDataType = {
-    String: 'String',
-    Text: 'String',
-    Int: 'Int',
-    Float: 'Float',
-    Checkbox: 'Boolean',
-    Date: 'DateTime',
-    Json: 'Json',
-  }
   private validator: Validator
   private datamodel: Datamodel
   constructor(datamodel: string) {
@@ -29,13 +20,10 @@ export class PrismaDataModel {
     return this.datamodel.content
   }
 
-  addField(
-    contentTypeName: string,
-    field: ContentTypeFieldCreateInput,
-  ): string {
+  addField(contentTypeName: string, field: ContentTypeFieldCreateInput): string {
     const newDatamodel = this.addFieldToModel(contentTypeName, {
       ...field,
-      type: this.customTypeToDataType[field.type],
+      type: field.type,
     })
     this.datamodel.content = newDatamodel
     return this.datamodel.content
