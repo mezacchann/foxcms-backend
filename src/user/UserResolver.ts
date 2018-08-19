@@ -16,10 +16,10 @@ export class UserResolver {
 
   @Query()
   async login(obj, { username, password }, context, info) {
-    const user = (await this.userService.getUser(
+    const user = await this.userService.getUser(
       username,
-      '{username imageUri password salt projects{id}}',
-    )) as User
+      '{id username imageUri password salt projects{id}}',
+    )
     if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
       throw new Error('You have entered an invalid username or password')
     }

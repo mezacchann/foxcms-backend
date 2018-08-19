@@ -7,26 +7,24 @@ import { ContentType } from './ContentType'
 export class ContentTypeService {
   constructor(@Inject('PrismaBinding') private prismaBinding: Prisma) {}
 
-  getContentType(id: number, info: string = '{id}'): Promise<ContentType> {
+  getContentType(id: number, info: any = '{id}'): Promise<ContentType> {
     return this.prismaBinding.query.contentType(
       {
         where: {
           id,
         },
       },
-      undefined,
       info,
     )
   }
 
-  getContentTypeField(id: number, info: string = '{id}'): Promise<ContentTypeField> {
+  getContentTypeField(id: number, info: any = '{id}'): Promise<ContentTypeField> {
     return this.prismaBinding.query.contentTypeField(
       {
         where: {
           id,
         },
       },
-      undefined,
       info,
     )
   }

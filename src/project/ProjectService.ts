@@ -40,7 +40,7 @@ export class ProjectService {
     }
   }
 
-  async getProject(id: number, user: User, info: string = '{id}'): Promise<Project> {
+  async getProject(id: number, user: User, info: any = '{id}'): Promise<Project> {
     this.checkUserPermission(id, user)
     return this.prismaBinding.query.project(
       {
@@ -48,7 +48,6 @@ export class ProjectService {
           id,
         },
       },
-      undefined,
       info,
     )
   }
@@ -160,8 +159,7 @@ export class ProjectService {
           datamodel,
         },
       },
-      undefined,
-      '{id}',
+      '{id}' as any,
     )
   }
 }
