@@ -139,7 +139,7 @@ export class ProjectService {
       secrets: process.env.FOXCMS_SECRET + projectName,
     })
     const deployPayload = deploy as DeployPayload
-    if (deployPayload.errors) {
+    if (deployPayload.errors.length > 0) {
       throw new Error(`Cannot deploy datamodel: ${deployPayload.errors[0].description}`)
     }
   }
