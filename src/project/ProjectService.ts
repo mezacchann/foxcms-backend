@@ -56,7 +56,7 @@ export class ProjectService {
       name: projectName,
       stage,
     })
-    await this.deploy(projectName, stage, 'type Initial{id: ID}')
+    await this.deploy(projectName, stage, 'type Initial{id: ID! @unique}')
     return projectName
   }
 
