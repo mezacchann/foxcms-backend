@@ -1,5 +1,8 @@
+scalar DateTime
 type User {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   username: String! @unique
   password: String!
   salt: String!
@@ -9,6 +12,8 @@ type User {
 
 type Project {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   user: User! @relation(name: "UserProjects")
   types: [ContentType!]!
   providedName: String!
@@ -20,15 +25,18 @@ type Project {
 
 type ContentType {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   project: Project!
   name: String!
   description: String
-  fields: [ContentTypeField!]!
-    @relation(name: "ContentTypeFields", onDelete: CASCADE)
+  fields: [ContentTypeField!]! @relation(name: "ContentTypeFields", onDelete: CASCADE)
 }
 
 type ContentTypeField {
   id: ID! @unique
+  createdAt: DateTime!
+  updatedAt: DateTime!
   contentType: ContentType! @relation(name: "ContentTypeFields")
   name: String!
   type: ContentTypeFieldType!
