@@ -11,6 +11,7 @@ import User from 'user/User'
 import { ContentType } from 'content-type/ContentType'
 import { Prisma } from 'prisma-binding'
 import { ContentTypeField } from 'content-type/ContentTypeField'
+import { DeployPayload } from 'prisma/DeployPayload'
 
 @Injectable()
 export class ProjectService {
@@ -131,12 +132,16 @@ export class ProjectService {
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
-    await this.managementApiClient.request(DEPLOY, {
+    const { deploy } = await this.managementApiClient.request<any>(DEPLOY, {
       projectName,
       stage,
       types: datamodel,
       secrets: process.env.FOXCMS_SECRET + projectName,
     })
+    const deployPayload = deploy as DeployPayload
+    if (deployPayload.errors) {
+      throw new Error(`Cannot deploy datamodel: ${deployPayload.errors[0].description}`)
+    }
   }
 
   private async updateProjectDatamodel(projectId, datamodel: string): Promise<Project> {
