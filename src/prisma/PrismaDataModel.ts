@@ -1,5 +1,6 @@
 import { Validator } from './Validator'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
+import { ContentTypeFieldType } from '../content-type/ContentTypeFieldType'
 
 export default interface Datamodel {
   content: string
@@ -41,7 +42,7 @@ export class PrismaDataModel {
     const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
     const result =
       this.datamodel.content.slice(0, idx) +
-      `${name}: ${type}${isRequired ? '!' : ''} ` +
+      `${name}: ${ContentTypeFieldType[type]}${isRequired ? '!' : ''} ` +
       this.datamodel.content.slice(idx)
     return result
   }
