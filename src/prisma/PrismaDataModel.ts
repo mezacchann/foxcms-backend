@@ -15,7 +15,7 @@ export class PrismaDataModel {
 
   addType(typeName: string): string {
     this.validator.isTypeCreatable(typeName)
-    const typeTemplate = `type ${typeName} {id: ID! @unique }`
+    const typeTemplate = `type ${typeName} {id: ID! @unique createdAt: DateTime! updatedAt: DateTime! }`
     this.datamodel.content += typeTemplate
     return this.datamodel.content
   }
