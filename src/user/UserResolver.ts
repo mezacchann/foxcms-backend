@@ -21,7 +21,7 @@ export class UserResolver {
       '{id username imageUri password salt projects{id}}',
     )
     if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
-      throw new Error('You have entered an invalid username or password')
+      throw new Error('Invalid username or password')
     }
     const firstProject = user.projects[0] as Project
     return this.authService.createToken({
