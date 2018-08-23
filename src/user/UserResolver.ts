@@ -20,7 +20,7 @@ export class UserResolver {
       username,
       '{id username imageUri password salt projects{id}}',
     )
-    if (!user || bcrypt.hashSync(password, user.salt) !== user.password) {
+    if (!user || !bcrypt.compareSync(password, user.password)) {
       throw new Error('Invalid username or password')
     }
     const firstProject = user.projects[0] as Project
