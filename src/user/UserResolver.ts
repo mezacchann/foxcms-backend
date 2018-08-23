@@ -33,6 +33,9 @@ export class UserResolver {
 
   @Query()
   async signup(obj, { username, password }, context, info) {
+    if (await this.userService.getUser(username)) {
+      throw new Error('Username already in use')
+    }
     const salt = bcrypt.genSaltSync()
     const user = (await context.prisma.mutation.createUser(
       {
