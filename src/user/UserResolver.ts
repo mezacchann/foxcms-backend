@@ -23,11 +23,8 @@ export class UserResolver {
     if (!user || !bcrypt.compareSync(password, user.password)) {
       throw new Error('Invalid username or password')
     }
-    const firstProject = user.projects[0] as Project
     return this.authService.createToken({
-      username: user.username,
-      imageUri: user.imageUri,
-      project: firstProject.id,
+      sub: user.id,
     })
   }
 
@@ -48,7 +45,7 @@ export class UserResolver {
       '{id username imageUri}',
     )) as User
     const projectName = await this.projectService.buildProject()
-    const project = (await context.prisma.mutation.createProject(
+    await context.prisma.mutation.createProject(
       {
         data: {
           user: {
@@ -62,10 +59,9 @@ export class UserResolver {
         },
       },
       '{id}',
-    )) as Project
+    )
     return this.authService.createToken({
-      username: user.username,
-      project: project.id,
+      sub: user.id,
     })
   }
 }
