@@ -13,6 +13,6 @@ export class AuthService {
   }
 
   async validateUser(payload: JwtPayload): Promise<User> {
-    return await this.userService.getUser(payload.username)
+    return await this.userService.getUserById(payload.sub)
   }
 }

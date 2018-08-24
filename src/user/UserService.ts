@@ -16,7 +16,7 @@ export class UserService {
     )
   }
 
-  getUserById(id: string, info: any = '{id}'): Promise<User> {
+  getUserById(id: number, info: any = '{id}'): Promise<User> {
     return this.prismaBinding.query.user(
       {
         where: {
