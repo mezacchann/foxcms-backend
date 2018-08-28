@@ -7,6 +7,7 @@ export default interface Datamodel {
 }
 
 export class PrismaDataModel {
+  static DEFAULT = 'type Initial{id: ID! @unique}'
   private validator: Validator
   private datamodel: Datamodel
   constructor(datamodel: string) {

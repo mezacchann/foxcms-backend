@@ -56,7 +56,7 @@ export class ProjectService {
       name: projectName,
       stage,
     })
-    await this.deploy(projectName, stage, 'type Initial{id: ID! @unique}')
+    await this.deploy(projectName, stage, PrismaDataModel.DEFAULT)
     return projectName
   }
 
@@ -132,10 +132,11 @@ export class ProjectService {
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
+    const newModel = datamodel !== '' ? datamodel : PrismaDataModel.DEFAULT
     const { deploy } = await this.managementApiClient.request<any>(DEPLOY, {
       projectName,
       stage,
-      types: datamodel,
+      types: newModel,
       secrets: process.env.FOXCMS_SECRET + projectName,
     })
     const deployPayload = deploy as DeployPayload
