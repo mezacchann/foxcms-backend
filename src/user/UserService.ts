@@ -1,6 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import User from './User'
 import { AuthService } from '../auth/AuthService'
 import { Prisma } from '../typings/prisma'
 import { ProjectService } from '../project/ProjectService'
@@ -44,7 +43,7 @@ export class UserService {
     })
   }
 
-  getUser(username: string, info: any = '{id}'): Promise<User> {
+  getUser(username: string, info: any = '{id}') {
     return this.prismaBinding.query.user(
       {
         where: {
@@ -55,7 +54,7 @@ export class UserService {
     )
   }
 
-  getUserById(id: string, info: any = '{id}'): Promise<User> {
+  getUserById(id: string, info: any = '{id}') {
     return this.prismaBinding.query.user(
       {
         where: {
