@@ -50,14 +50,28 @@ export class ProjectService {
     )
   }
 
-  async buildProject(stage: string = 'Production'): Promise<string> {
+  async buildProject(userId: string, stage: string = 'Production') {
     const projectName = scuid()
     await this.managementApiClient.request(ADD_PROJECT, {
       name: projectName,
       stage,
     })
     await this.deploy(projectName, stage, PrismaDataModel.DEFAULT)
-    return projectName
+    return this.prismaBinding.mutation.createProject(
+      {
+        data: {
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+          providedName: 'initial-project',
+          generatedName: projectName,
+          stage: 'Production',
+        },
+      },
+      '{id}' as any,
+    )
   }
 
   async addContentType(project: Project, typeName: string): Promise<string> {

@@ -32,10 +32,10 @@ export class ProjectResolver {
         '{id providedName generatedName stage}',
       )) as Project
     } else {
-      const user = (await this.userService.getUserById(
+      const user = await this.userService.getUserById(
         obj.user.id,
         '{projects {id providedName generatedName stage}}',
-      )) as User
+      )
       project = user.projects[0]
     }
     if (!project) {
@@ -60,26 +60,11 @@ export class ProjectResolver {
 
   @Mutation()
   async createProject(obj, { userId, name }, context, info): Promise<Project> {
-    const user = (await this.userService.getUserById(userId)) as User
+    const user = await this.userService.getUserById(userId)
     if (!user) {
       throw new Error(`User with id ${userId} does not exist`)
     }
-    const projectName = await this.projectService.buildProject()
-    return context.prisma.mutation.createProject(
-      {
-        data: {
-          user: {
-            connect: {
-              id: user.id,
-            },
-          },
-          providedName: name,
-          generatedName: projectName,
-          stage: 'Production',
-        },
-      },
-      info,
-    )
+    return await this.projectService.buildProject(userId)
   }
 
   @Mutation()
