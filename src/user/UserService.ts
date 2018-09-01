@@ -13,7 +13,7 @@ export class UserService {
   ) {}
 
   async login(username: string, password: string) {
-    const user = await this.getUser(username, '{id password')
+    const user = await this.getUser(username, '{id password}')
     if (!user || !bcrypt.compareSync(password, user.password)) {
       throw new Error('Invalid username or password')
     }
