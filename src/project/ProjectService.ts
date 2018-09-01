@@ -11,18 +11,16 @@ import User from 'user/User'
 import { ContentType } from 'content-type/ContentType'
 import { Prisma } from 'prisma-binding'
 import { ContentTypeField } from 'content-type/ContentTypeField'
+import { DeployPayload } from 'prisma/DeployPayload'
 
 @Injectable()
 export class ProjectService {
   prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-  managementApiClient = new GraphQLClient(
-    `${this.prismaServerEndpoint.origin}/management`,
-    {
-      headers: {
-        Authorization: `Bearer ${this.prismaManagementToken}`,
-      },
+  managementApiClient = new GraphQLClient(`${this.prismaServerEndpoint.origin}/management`, {
+    headers: {
+      Authorization: `Bearer ${this.prismaManagementToken}`,
     },
-  )
+  })
   constructor(
     @Inject('PrismaBinding') private prismaBinding: Prisma,
     @Inject('PrismaManagementToken') private prismaManagementToken: string,
@@ -31,16 +29,16 @@ export class ProjectService {
 
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
     if (
-      await this.prismaBinding.exists.Project({
+      !(await this.prismaBinding.exists.Project({
         id: projectId,
         user: { id: user.id },
-      })
+      }))
     ) {
       throw new Error(`Cannot find project ${projectId}`)
     }
   }
 
-  async getProject(id: number, user: User, info: string = '{id}'): Promise<Project> {
+  async getProject(id: number, user: User, info: any = '{id}'): Promise<Project> {
     this.checkUserPermission(id, user)
     return this.prismaBinding.query.project(
       {
@@ -48,19 +46,32 @@ export class ProjectService {
           id,
         },
       },
-      undefined,
       info,
     )
   }
 
-  async buildProject(stage: string = 'Production'): Promise<string> {
+  async buildProject(userId: string, stage: string = 'Production') {
     const projectName = scuid()
     await this.managementApiClient.request(ADD_PROJECT, {
       name: projectName,
       stage,
     })
-    await this.deploy(projectName, stage, 'type Initial{id: ID}')
-    return projectName
+    await this.deploy(projectName, stage, PrismaDataModel.DEFAULT)
+    return this.prismaBinding.mutation.createProject(
+      {
+        data: {
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+          providedName: 'initial-project',
+          generatedName: projectName,
+          stage: 'Production',
+        },
+      },
+      '{id}' as any,
+    )
   }
 
   async addContentType(project: Project, typeName: string): Promise<string> {
@@ -88,10 +99,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async addContentTypeField(
-    field: ContentTypeFieldCreateInput,
-    user: User,
-  ): Promise<string> {
+  async addContentTypeField(field: ContentTypeFieldCreateInput, user: User): Promise<string> {
     const contentType = (await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
@@ -137,17 +145,18 @@ export class ProjectService {
     )
   }
 
-  private async deploy(
-    projectName: string,
-    stage: string,
-    datamodel: string,
-  ): Promise<void> {
-    await this.managementApiClient.request(DEPLOY, {
+  private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
+    const newModel = datamodel !== '' ? datamodel : PrismaDataModel.DEFAULT
+    const { deploy } = await this.managementApiClient.request<any>(DEPLOY, {
       projectName,
       stage,
-      types: datamodel,
+      types: newModel,
       secrets: process.env.FOXCMS_SECRET + projectName,
     })
+    const deployPayload = deploy as DeployPayload
+    if (deployPayload.errors.length > 0) {
+      throw new Error(`Cannot deploy datamodel: ${deployPayload.errors[0].description}`)
+    }
   }
 
   private async updateProjectDatamodel(projectId, datamodel: string): Promise<Project> {
@@ -160,8 +169,7 @@ export class ProjectService {
           datamodel,
         },
       },
-      undefined,
-      '{id}',
+      '{id}' as any,
     )
   }
 }

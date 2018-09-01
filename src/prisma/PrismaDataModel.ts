@@ -1,20 +1,13 @@
 import { Validator } from './Validator'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
+import { ContentTypeFieldType } from '../content-type/ContentTypeFieldType'
 
 export default interface Datamodel {
   content: string
 }
 
 export class PrismaDataModel {
-  private readonly customTypeToDataType = {
-    String: 'String',
-    Text: 'String',
-    Int: 'Int',
-    Float: 'Float',
-    Checkbox: 'Boolean',
-    Date: 'DateTime',
-    Json: 'Json',
-  }
+  static DEFAULT = 'type Initial{id: ID! @unique}'
   private validator: Validator
   private datamodel: Datamodel
   constructor(datamodel: string) {
@@ -24,18 +17,15 @@ export class PrismaDataModel {
 
   addType(typeName: string): string {
     this.validator.isTypeCreatable(typeName)
-    const typeTemplate = `type ${typeName} {id: ID! @unique }`
+    const typeTemplate = `type ${typeName} {id: ID! @unique createdAt: DateTime! updatedAt: DateTime! }`
     this.datamodel.content += typeTemplate
     return this.datamodel.content
   }
 
-  addField(
-    contentTypeName: string,
-    field: ContentTypeFieldCreateInput,
-  ): string {
+  addField(contentTypeName: string, field: ContentTypeFieldCreateInput): string {
     const newDatamodel = this.addFieldToModel(contentTypeName, {
       ...field,
-      type: this.customTypeToDataType[field.type],
+      type: field.type,
     })
     this.datamodel.content = newDatamodel
     return this.datamodel.content
@@ -53,7 +43,7 @@ export class PrismaDataModel {
     const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
     const result =
       this.datamodel.content.slice(0, idx) +
-      `${name}: ${type}${isRequired ? '!' : ''} ` +
+      `${name}: ${ContentTypeFieldType[type]}${isRequired ? '!' : ''} ` +
       this.datamodel.content.slice(idx)
     return result
   }

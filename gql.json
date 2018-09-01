@@ -1,0 +1,6 @@
+{
+  "generatorConfig": {
+    "noHOC": true,
+    "noNamespaces": true
+  }
+}

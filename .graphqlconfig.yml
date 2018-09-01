@@ -3,3 +3,12 @@ projects:
     schemaPath: prisma/generated/prisma.graphql
     extensions:
       prisma: prisma/prisma.yml
+      includes: [
+        "prisma.graphql", 
+        "datamodel.graphql",
+      ]
+      codegen:
+        - generator: prisma-binding
+          language: typescript
+          output:
+            binding: src/typings/prisma.ts
