@@ -2,7 +2,5 @@ endpoint: ${env:PRISMA_SERVER_ENDPOINT}
 datamodel:
   - ./../src/datamodel.graphql
 secret: ${env:FOXCMS_SECRET}
-hooks:
-  post-deploy:
-    - graphql get-schema -p prisma
-    - graphql codegen
+seed:
+  import: seed.graphql

@@ -1,0 +1,11 @@
+mutation {
+  createUser(
+    data: {
+      username: "peter"
+      password: "$2b$10$3sD7qxIrnDYTDpXaWUEtEOQGEJcm0w7Es5nc4Mkg32dnDmvLbznoW"
+      salt: "$2b$10$3sD7qxIrnDYTDpXaWUEtEO"
+    }
+  ) {
+    id
+  }
+}
