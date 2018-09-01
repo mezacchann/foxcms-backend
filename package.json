@@ -16,9 +16,11 @@
     "prestart:prod": "rm -rf dist && tsc",
     "start:prod": "node dist/main.js",
     "start:hmr": "node dist/server",
-    "test": "jest",
+    "pretest": "prisma deploy -e test.env",
+    "test": "NODE_ENV=test-all jest --coverage",
+    "posttest": "prisma delete -e test.env -f",
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest -i",
-    "test:cov": "jest --coverage",
+    "test:unit": "jest --config ./jest-unit.json",
     "pretest:integ": "prisma deploy -e test.env",
     "test:integ": "NODE_ENV=integration-test jest --config ./jest-integ.json",
     "test:integ:debug": "NODE_ENV=integration-test node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-integ.json",
@@ -86,10 +88,6 @@
       "ts"
     ],
     "rootDir": "src",
-    "testPathIgnorePatterns": [
-      "e2e-spec.ts$",
-      "integ-spec.ts$"
-    ],
     "testRegex": ".spec.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
