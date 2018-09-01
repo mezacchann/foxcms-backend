@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing'
+import * as jsonwebtoken from 'jsonwebtoken'
 import { UserService } from '../user/UserService'
 import { AuthService } from '../auth/AuthService'
 import { ProjectService } from '../project/ProjectService'
@@ -42,6 +43,9 @@ describe('UserService', () => {
       jest.spyOn(projectService, 'buildProject').mockImplementation(buildProjectFn)
       const token = await userService.signup('wowa', 'secret')
       expect(token).toMatch(/^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9/)
+      const tokenPayload = jsonwebtoken.decode(token)
+      const user = await userService.getUserById(tokenPayload.sub, '{username}')
+      expect(user.username).toBe('wowa')
       expect(buildProjectFn).toHaveBeenCalledTimes(1)
     })
 
