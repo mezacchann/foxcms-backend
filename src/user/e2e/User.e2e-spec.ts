@@ -23,7 +23,6 @@ describe('Cats', () => {
     const res = await request(app.getHttpServer())
       .post('/graphql')
       .send({ query: 'query{signup(username: "peter2", password: "his-secret")}' })
-    console.log(await userService.getUser('peter'))
   })
 
   afterAll(async () => {
