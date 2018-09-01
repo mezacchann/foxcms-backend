@@ -1,10 +1,11 @@
-import * as jwt from 'jsonwebtoken'
+import { JwtService } from '@nestjs/jwt'
 import { Injectable } from '@nestjs/common'
 import { JwtPayload } from './JwtPayload'
 
 @Injectable()
 export class AuthService {
+  constructor(private readonly jwtService: JwtService) {}
   createToken(jwtPayload: JwtPayload): string {
-    return jwt.sign(jwtPayload, process.env.FOXCMS_SECRET, { expiresIn: '1h' })
+    return this.jwtService.sign(jwtPayload)
   }
 }
