@@ -21,6 +21,7 @@
     "posttest": "prisma delete -e test.env -f",
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest -i",
     "test:unit": "jest --config ./jest-unit.json",
+    "test:unit:debug": "node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-unit.json",
     "pretest:integ": "prisma deploy -e test.env",
     "test:integ": "NODE_ENV=integration-test jest --config ./jest-integ.json",
     "test:integ:debug": "NODE_ENV=integration-test node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-integ.json",
@@ -40,6 +41,7 @@
     "graphql": "^0.13.2",
     "graphql-request": "^1.8.1",
     "graphql-tools": "^3.1.1",
+    "lodash": "^4.17.10",
     "merge-graphql-schemas": "^1.5.3",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
@@ -47,7 +49,8 @@
     "reflect-metadata": "^0.1.12",
     "rxjs": "^6.2.2",
     "scuid": "^1.1.0",
-    "typescript": "^3.0.1"
+    "typescript": "^3.0.1",
+    "voca": "^1.4.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^5.1.0",
@@ -56,10 +59,12 @@
     "@types/express": "^4.16.0",
     "@types/jest": "^23.3.1",
     "@types/jsonwebtoken": "^7.2.8",
+    "@types/lodash": "^4.14.116",
     "@types/node": "^10.5.7",
     "@types/node-cache": "^4.1.1",
     "@types/passport-jwt": "^3.0.1",
     "@types/supertest": "^2.0.5",
+    "@types/voca": "^1.4.0",
     "jest": "^23.4.2",
     "nodemon": "^1.18.3",
     "prettier": "^1.14.0",
