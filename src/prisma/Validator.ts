@@ -41,9 +41,7 @@ export class Validator {
 
   isFieldCreatable(typeName: string, fieldName: string): boolean {
     if (this.fieldExistsWithinType(typeName, fieldName)) {
-      throw new Error(
-        `Field ${fieldName} exists already within type ${typeName}`,
-      )
+      throw new Error(`Field ${fieldName} exists already within type ${typeName}`)
     }
     if (/\s/.test(fieldName)) {
       throw new Error('Field name may not contain any whitespaces')
@@ -60,9 +58,7 @@ export class Validator {
       throw new Error(`Type ${typeName} doesn't exists`)
     }
     if (!this.fieldExistsWithinType(typeName, fieldName)) {
-      throw new Error(
-        `Field ${fieldName} doesn't exist within type ${typeName}`,
-      )
+      throw new Error(`Field ${fieldName} doesn't exist within type ${typeName}`)
     }
     return true
   }
@@ -82,6 +78,9 @@ export class Validator {
   private fieldExistsWithinType(typeName: string, fieldName: string) {
     const regex = new RegExp(`type ${typeName} \\{[^{}]*\\}`)
     const result = this.datamodel.content.match(regex)
+    if (!result) {
+      throw new Error('Cannot find content type')
+    }
     return result[0].indexOf(fieldName) > -1
   }
 }

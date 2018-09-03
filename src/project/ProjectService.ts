@@ -14,27 +14,28 @@ import { DeployPayload } from 'prisma/DeployPayload'
 
 @Injectable()
 export class ProjectService {
-  prismaServerEndpoint
-  managementApiClient = new GraphQLClient(`${this.prismaServerEndpoint.origin}/management`, {
-    headers: {
-      Authorization: `Bearer ${this.prismaManagementToken}`,
-    },
-  })
+  prismaServerEndpoint: URL
+  managementApiClient: GraphQLClient
   constructor(
     @Inject('PrismaBinding') private prismaBinding: Prisma,
     @Inject('PrismaManagementToken') private prismaManagementToken: string,
     private contentTypeService: ContentTypeService,
   ) {
-    this.resolvePrismaServerEndpoint()
-  }
-
-  private resolvePrismaServerEndpoint() {
     if (process.env.PRISMA_SERVER_ENDPOINT) {
       this.prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
     } else {
       throw new Error('Environment variable PRISMA_SERVER_ENDPOINT is not set')
     }
+    this.managementApiClient = new GraphQLClient(
+      `${this.prismaServerEndpoint.origin}/management`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.prismaManagementToken}`,
+        },
+      },
+    )
   }
+
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
     if (
       !(await this.prismaBinding.exists.Project({

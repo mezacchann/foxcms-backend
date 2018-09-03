@@ -39,8 +39,11 @@ export class PrismaDataModel {
     this.validator.isFieldCreatable(contentTypeName, name)
     const matchedType = this.datamodel.content.match(
       `type\\\s${contentTypeName}\\\s*\\{[^{}]*`,
-    )[0]
-    const idx = this.datamodel.content.indexOf(matchedType) + matchedType.length
+    )
+    if (!matchedType) {
+      throw new Error('Cannot find appropriate content type')
+    }
+    const idx = this.datamodel.content.indexOf(matchedType[0]) + matchedType.length
     const result =
       this.datamodel.content.slice(0, idx) +
       `${name}: ${ContentTypeFieldType[type]}${isRequired ? '!' : ''} ` +
@@ -58,13 +61,16 @@ export class PrismaDataModel {
   deleteContentTypeField(contentTypeName: string, fieldName: string): string {
     this.validator.isFieldDeletable(contentTypeName, fieldName)
     const regex = new RegExp(`type ${contentTypeName} \\{.*?\\}`)
-    const matchedContent = this.datamodel.content.match(regex)[0]
-    const typeWithRemovedField = matchedContent.replace(
+    const matchedContent = this.datamodel.content.match(regex)
+    if (!matchedContent) {
+      throw new Error('Cannot find appropriate content type')
+    }
+    const typeWithRemovedField = matchedContent[0].replace(
       new RegExp(`${fieldName}:\\s.*?\\s`),
       '',
     )
     this.datamodel.content = this.datamodel.content.replace(
-      matchedContent,
+      matchedContent[0],
       typeWithRemovedField,
     )
     return this.datamodel.content
