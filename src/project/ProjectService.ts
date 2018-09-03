@@ -3,7 +3,6 @@ import * as jwt from 'jsonwebtoken'
 import { GraphQLClient } from 'graphql-request'
 import * as scuid from 'scuid'
 import { ADD_PROJECT, DEPLOY } from './mutations'
-import { PrismaDataModel } from './../prisma/PrismaDataModel'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import User from 'user/User'
@@ -11,6 +10,7 @@ import { Prisma, Project } from '../typings/prisma'
 import { ContentType } from 'content-type/ContentType'
 import { ContentTypeField } from 'content-type/ContentTypeField'
 import { DeployPayload } from 'prisma/DeployPayload'
+import Datamodel from '../prisma/Datamodel'
 
 @Injectable()
 export class ProjectService {
@@ -65,7 +65,7 @@ export class ProjectService {
       name: projectName,
       stage,
     })
-    await this.deploy(projectName, stage, PrismaDataModel.DEFAULT)
+    await this.deploy(projectName, stage, Datamodel.DEFAULT)
     return this.prismaBinding.mutation.createProject(
       {
         data: {
@@ -84,7 +84,7 @@ export class ProjectService {
   }
 
   async addContentType(project: Project, typeName: string): Promise<string> {
-    const datamodel = new PrismaDataModel(project.datamodel)
+    const datamodel = new Datamodel(project.datamodel)
     const modifiedDatamodel = datamodel.addType(typeName)
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
@@ -101,7 +101,7 @@ export class ProjectService {
     }
     this.checkUserPermission(contentType.project.id, user)
     const { project } = contentType
-    const datamodel = new PrismaDataModel(project.datamodel)
+    const datamodel = new Datamodel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
@@ -121,8 +121,13 @@ export class ProjectService {
     }
     this.checkUserPermission(contentType.project.id, user)
     const { project } = contentType
-    const datamodel = new PrismaDataModel(project.datamodel)
-    const modifiedDatamodel = datamodel.addField(contentType.name, field)
+    const datamodel = new Datamodel(project.datamodel)
+    const modifiedDatamodel = datamodel.addField(
+      contentType.name,
+      field.name,
+      field.type,
+      field.isRequired,
+    )
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
@@ -139,11 +144,8 @@ export class ProjectService {
     this.checkUserPermission(contentTypeField.contentType.project.id, user)
     const { contentType } = contentTypeField
     const { project } = contentType
-    const datamodel = new PrismaDataModel(project.datamodel)
-    const modifiedDatamodel = datamodel.deleteContentTypeField(
-      contentType.name,
-      contentTypeField.name,
-    )
+    const datamodel = new Datamodel(project.datamodel)
+    const modifiedDatamodel = datamodel.deleteField(contentType.name, contentTypeField.name)
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
@@ -158,7 +160,7 @@ export class ProjectService {
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
-    const newModel = datamodel !== '' ? datamodel : PrismaDataModel.DEFAULT
+    const newModel = datamodel !== '' ? datamodel : Datamodel.DEFAULT
     const { deploy } = await this.managementApiClient.request<any>(DEPLOY, {
       projectName,
       stage,

@@ -3,6 +3,7 @@ import * as v from 'voca'
 import { ContentTypeFieldType } from '../content-type/ContentTypeFieldType'
 
 export default class Datamodel {
+  static DEFAULT = 'type Initial{id: ID! @unique}'
   private readonly typeTemplate = _.template(
     'type <%= type %>{id: ID! @unique,createdAt: DateTime!,updatedAt: DateTime!}',
   )
