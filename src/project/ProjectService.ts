@@ -4,18 +4,17 @@ import { GraphQLClient } from 'graphql-request'
 import * as scuid from 'scuid'
 import { ADD_PROJECT, DEPLOY } from './mutations'
 import { PrismaDataModel } from './../prisma/PrismaDataModel'
-import { Project } from './Project'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import User from 'user/User'
+import { Prisma, Project } from '../typings/prisma'
 import { ContentType } from 'content-type/ContentType'
-import { Prisma } from 'prisma-binding'
 import { ContentTypeField } from 'content-type/ContentTypeField'
 import { DeployPayload } from 'prisma/DeployPayload'
 
 @Injectable()
 export class ProjectService {
-  prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+  prismaServerEndpoint
   managementApiClient = new GraphQLClient(`${this.prismaServerEndpoint.origin}/management`, {
     headers: {
       Authorization: `Bearer ${this.prismaManagementToken}`,
@@ -25,8 +24,17 @@ export class ProjectService {
     @Inject('PrismaBinding') private prismaBinding: Prisma,
     @Inject('PrismaManagementToken') private prismaManagementToken: string,
     private contentTypeService: ContentTypeService,
-  ) {}
+  ) {
+    this.resolvePrismaServerEndpoint()
+  }
 
+  private resolvePrismaServerEndpoint() {
+    if (process.env.PRISMA_SERVER_ENDPOINT) {
+      this.prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
+    } else {
+      throw new Error('Environment variable PRISMA_SERVER_ENDPOINT is not set')
+    }
+  }
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
     if (
       !(await this.prismaBinding.exists.Project({
@@ -38,16 +46,16 @@ export class ProjectService {
     }
   }
 
-  async getProject(id: number, user: User, info: any = '{id}'): Promise<Project> {
-    this.checkUserPermission(id, user)
-    return this.prismaBinding.query.project(
+  async getProject(id: string, user: User, info: any = '{id}') {
+    const projects = await this.prismaBinding.query.projects(
       {
         where: {
-          id,
+          AND: [{ id }, { user: { id: user.id } }],
         },
       },
       info,
     )
+    return projects[0]
   }
 
   async buildProject(userId: string, stage: string = 'Production') {
@@ -70,7 +78,7 @@ export class ProjectService {
           stage: 'Production',
         },
       },
-      '{id}' as any,
+      '{id}',
     )
   }
 
@@ -100,6 +108,9 @@ export class ProjectService {
   }
 
   async addContentTypeField(field: ContentTypeFieldCreateInput, user: User): Promise<string> {
+    if (!field.contentTypeId) {
+      throw new Error('')
+    }
     const contentType = (await this.contentTypeService.getContentType(
       field.contentTypeId,
       '{name project{id generatedName stage datamodel}}',
@@ -137,7 +148,7 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  generateProjectToken(project: Project, temporary: boolean = true): string {
+  generateProjectToken(project: Project, temporary: boolean = true) {
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
       process.env.FOXCMS_SECRET + project.generatedName,
@@ -159,7 +170,7 @@ export class ProjectService {
     }
   }
 
-  private async updateProjectDatamodel(projectId, datamodel: string): Promise<Project> {
+  private async updateProjectDatamodel(projectId, datamodel: string) {
     return this.prismaBinding.mutation.updateProject(
       {
         where: {

@@ -3,8 +3,6 @@ import { UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
-import { Project } from './Project'
-import User from 'user/User'
 import { ProjectWithToken } from './ProjectWithToken'
 import { ContentType } from 'content-type/ContentType'
 import { ContentTypeField } from 'content-type/ContentTypeField'
@@ -18,30 +16,32 @@ export class ProjectResolver {
   ) {}
 
   @Query()
-  getProject(obj, { id }, context, info): Promise<Project> {
+  getProject(obj, { id }, context, info) {
     return this.projectService.getProject(id, obj.user, info)
   }
 
   @Query()
-  async getProjectWithToken(obj, { id }, context, info): Promise<ProjectWithToken> {
+  async getProjectWithToken(obj, { id }, context, info) {
     let project
     if (id) {
-      project = (await this.projectService.getProject(
+      project = await this.projectService.getProject(
         id,
         obj.user,
         '{id providedName generatedName stage}',
-      )) as Project
+      )
     } else {
       const user = await this.userService.getUserById(
         obj.user.id,
         '{projects {id providedName generatedName stage}}',
       )
-      project = user.projects[0]
+      if (user && user.projects) {
+        project = user.projects[0]
+      }
     }
     if (!project) {
       throw new Error('User has no projects')
     }
-    const token = await this.projectService.generateProjectToken(project, obj.user)
+    const token = await this.projectService.generateProjectToken(project)
     return {
       project,
       token,
@@ -50,16 +50,19 @@ export class ProjectResolver {
 
   @Query()
   async generatePermToken(obj, { id }, context, info): Promise<string> {
-    const project = (await this.projectService.getProject(
+    const project = await this.projectService.getProject(
       id,
       obj.user,
       '{providedName generatedName stage}',
-    )) as Project
+    )
+    if (!project) {
+      throw new Error(`Project ${id} does not exist`)
+    }
     return this.projectService.generateProjectToken(project, false)
   }
 
   @Mutation()
-  async createProject(obj, { userId, name }, context, info): Promise<Project> {
+  async createProject(obj, { userId, name }, context, info) {
     const user = await this.userService.getUserById(userId)
     if (!user) {
       throw new Error(`User with id ${userId} does not exist`)
@@ -74,7 +77,7 @@ export class ProjectResolver {
     context,
     info,
   ): Promise<ContentType> {
-    const project = (await this.projectService.getProject(
+    const project = await this.projectService.getProject(
       projectId,
       obj.user,
       `{
@@ -83,7 +86,7 @@ export class ProjectResolver {
       stage
       datamodel
      }`,
-    )) as Project
+    )
     await this.projectService.addContentType(project, contentTypeName)
     return context.prisma.mutation.createContentType(
       {
