@@ -54,6 +54,7 @@ export class ProjectService {
           providedName,
           generatedName: projectName,
           stage: 'Production',
+          datamodel: Datamodel.DEFAULT,
         },
       },
       info,
@@ -184,7 +185,7 @@ export class ProjectService {
           datamodel,
         },
       },
-      '{id}' as any,
+      '{id}',
     )
   }
 }

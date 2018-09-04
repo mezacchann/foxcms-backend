@@ -47,14 +47,14 @@ export class ProjectResolver {
   }
 
   @Query()
-  async generatePermToken(obj, { id }, context, info): Promise<string> {
+  async generatePermToken(obj, { id }, context, info): Promise<string | null> {
     const project = await this.projectService.getProject(
       id,
       obj.user,
       '{providedName generatedName stage}',
     )
     if (!project) {
-      throw new Error(`Project ${id} does not exist`)
+      return null
     }
     return this.projectService.generateProjectToken(project, false)
   }

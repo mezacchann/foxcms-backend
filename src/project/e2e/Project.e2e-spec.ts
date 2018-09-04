@@ -5,16 +5,21 @@ import { AppModule } from '../../app.module'
 import { ProjectModule } from '../ProjectModule'
 import { AuthModule } from '../../auth/AuthModule'
 import { ContentTypeModule } from '../../content-type/ContentTypeModule'
-import { Project } from '../../typings/prisma'
+import { Project, ContentType } from '../../typings/prisma'
 import { ProjectWithToken } from '../ProjectWithToken'
+import Datamodel from '../../prisma/Datamodel'
+import { ProjectService } from '../ProjectService'
+
 describe('Project', () => {
   let app: INestApplication
+  let projectService: ProjectService
   let project: Project
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule, ProjectModule, ContentTypeModule, AuthModule],
     }).compile()
     app = module.createNestApplication()
+    projectService = app.get<ProjectService>(ProjectService)
     await app.init()
   })
 
@@ -30,6 +35,7 @@ describe('Project', () => {
               createProject(name: "${projectName}") {
                 id
                 providedName
+                datamodel
                 user {
                   username
                   id
@@ -41,6 +47,7 @@ describe('Project', () => {
     project = res.body.data.createProject as Project
     expect(project.providedName).toBe(projectName)
     expect(project.user.username).toBe(process.env.TEST_USER)
+    expect(project.datamodel).toBe(Datamodel.DEFAULT)
   })
   describe('getProject', () => {
     it('should retrieve a project from the db', async () => {
@@ -142,6 +149,83 @@ describe('Project', () => {
             }`,
         })
       expect(res.body.data.getProjectWithToken).toBe(null)
+    })
+  })
+  describe('generatePermToken', () => {
+    it('should generate a token for the given project', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `query {
+              generatePermToken(id: "${project.id}")
+            }`,
+        })
+      const token = res.body.data.generatePermToken
+      expect(token).toMatch(/^eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9/)
+    })
+    it('should return null for a not existent project', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `query {
+              generatePermToken(id: "notExistent")
+            }`,
+        })
+      const token = res.body.data.generatePermToken
+      expect(token).toBe(null)
+    })
+  })
+  describe('addContentType', () => {
+    it('should add a content type to the given project', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+              addContentType(projectId: "${
+                project.id
+              }", contentTypeName: "article", description: "my-description") {
+                name
+                description
+                project {
+                  id
+                }
+              }
+            }`,
+        })
+      const contentType = res.body.data.addContentType as ContentType
+      expect(contentType.name).toBe('article')
+      expect(contentType.description).toBe('my-description')
+      expect(contentType.project.id).toBe(project.id)
+    })
+    it('should throw an error if content type already exist', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+              addContentType(projectId: "${
+                project.id
+              }", contentTypeName: "article", description: "my-description") {
+                name
+                description
+                project {
+                  id
+                }
+              }
+            }`,
+        })
+      expect(res.body.errors).not.toBe(undefined)
     })
   })
 })
