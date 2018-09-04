@@ -5,7 +5,7 @@ config({ path: './test.env' })
 
 let prismaBinding
 
-if (process.env.NODE_ENV === 'test-all' || process.env.NODE_ENV === 'integration-test') {
+if (process.env.NODE_ENV === 'test-all' || process.env.NODE_ENV === 'e2e') {
   prismaBinding = new Prisma({
     typeDefs: './prisma/generated/prisma.graphql',
     endpoint: process.env.PRISMA_SERVER_ENDPOINT,

@@ -22,10 +22,10 @@
     "test:debug": "node --inspect-brk ./node_modules/.bin/jest -i",
     "test:unit": "jest --config ./jest-unit.json",
     "test:unit:debug": "node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-unit.json",
-    "pretest:integ": "prisma deploy -e test.env",
-    "test:integ": "NODE_ENV=integration-test jest --config ./jest-integ.json",
-    "test:integ:debug": "NODE_ENV=integration-test node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-integ.json",
-    "posttest:integ": "prisma delete -e test.env -f",
+    "pretest:e2e": "prisma deploy -e test.env",
+    "test:e2e": "NODE_ENV=e2e jest --config ./jest-e2e.json",
+    "test:e2e:debug": "NODE_ENV=e2e node --inspect-brk ./node_modules/.bin/jest -i --config ./jest-e2e.json",
+    "posttest:e2e": "prisma delete -e test.env -f",
     "webpack": "webpack --config webpack.config.js"
   },
   "dependencies": {

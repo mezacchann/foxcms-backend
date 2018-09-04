@@ -17,5 +17,5 @@
     "lib": ["esnext.asynciterable", "es2015", "dom"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.integ-spec.ts"]
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }
