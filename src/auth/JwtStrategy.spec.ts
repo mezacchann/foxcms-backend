@@ -22,6 +22,7 @@ describe('JwtStrategy', () => {
         ContentTypeService,
         { provide: 'PrismaManagementToken', useValue: '' },
         { provide: 'PrismaBinding', useValue: {} },
+        { provide: 'ManagementApiClient', useValue: {} },
       ],
     }).compile()
 

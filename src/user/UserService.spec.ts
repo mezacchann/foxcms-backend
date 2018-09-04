@@ -28,6 +28,7 @@ describe('UserService', () => {
         ContentTypeService,
         { provide: 'PrismaBinding', useValue: binding },
         { provide: 'PrismaManagementToken', useValue: '' },
+        { provide: 'ManagementApiClient', useValue: {} },
       ],
     }).compile()
 
