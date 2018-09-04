@@ -10,11 +10,11 @@ type ProjectWithToken {
 }
 type Query {
   getProject(id: ID!): Project
-  getProjectWithToken(id: ID): ProjectWithToken!
+  getProjectWithToken(id: ID): ProjectWithToken
   generatePermToken(id: ID!): String!
 }
 type Mutation {
-  createProject(userId: ID!, name: String!): Project!
+  createProject(name: String!): Project!
   addContentType(projectId: ID!, contentTypeName: String!, description: String): ContentType!
   deleteContentType(id: ID!): ContentType!
   addContentTypeField(contentTypeField: ContentTypeFieldCreateInput!): ContentTypeField!

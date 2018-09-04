@@ -31,19 +31,12 @@ export class ProjectService {
     }
   }
 
-  async getProject(id: string, user: User, info: any = '{id}') {
-    const projects = await this.prismaBinding.query.projects(
-      {
-        where: {
-          AND: [{ id }, { user: { id: user.id } }],
-        },
-      },
-      info,
-    )
-    return projects[0]
-  }
-
-  async buildProject(userId: string, stage: string = 'Production') {
+  async buildProject(
+    userId: string,
+    providedName = 'initial-project',
+    stage: string = 'Production',
+    info = '{id}',
+  ) {
     const projectName = scuid()
     await this.managementApiClient.request(ADD_PROJECT, {
       name: projectName,
@@ -58,12 +51,44 @@ export class ProjectService {
               id: userId,
             },
           },
-          providedName: 'initial-project',
+          providedName,
           generatedName: projectName,
           stage: 'Production',
         },
       },
-      '{id}',
+      info,
+    )
+  }
+
+  async getProject(id: string, user: User, info: string = '{id}') {
+    const projects = await this.prismaBinding.query.projects(
+      {
+        where: {
+          AND: [{ id }, { user: { id: user.id } }],
+        },
+      },
+      info,
+    )
+    return projects[0]
+  }
+
+  async getFirstUserProject(user: User, info: string = '{id}') {
+    const projects = await this.prismaBinding.query.projects(
+      {
+        where: {
+          user: { id: user.id },
+        },
+      },
+      info,
+    )
+    return projects[0]
+  }
+
+  generateProjectToken(project: Project, temporary: boolean = true) {
+    return jwt.sign(
+      { project: project.providedName, stage: project.stage },
+      process.env.FOXCMS_SECRET + project.generatedName,
+      { expiresIn: temporary ? '1h' : '1y' },
     )
   }
 
@@ -133,14 +158,6 @@ export class ProjectService {
     await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
-  }
-
-  generateProjectToken(project: Project, temporary: boolean = true) {
-    return jwt.sign(
-      { project: project.providedName, stage: project.stage },
-      process.env.FOXCMS_SECRET + project.generatedName,
-      { expiresIn: temporary ? '1h' : '1y' },
-    )
   }
 
   private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {

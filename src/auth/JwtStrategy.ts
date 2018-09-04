@@ -14,7 +14,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload, done: VerifiedCallback) {
-    const user = await this.userService.getUserById(payload.sub)
+    let user = await this.userService.getUserById(payload.sub)
+    if (process.env.NODE_ENV === 'test') {
+      user = await this.userService.getUser(process.env.TEST_USER ? process.env.TEST_USER : '')
+    }
     if (!user) {
       done(new UnauthorizedException(), false)
     }

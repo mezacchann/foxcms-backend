@@ -1,4 +1,4 @@
-import { Project } from './Project'
+import { Project } from '../typings/prisma'
 
 export interface ProjectWithToken {
   project: Project

@@ -7,12 +7,7 @@ import { ContentTypeModule } from './../content-type/ContentTypeModule'
 import { AuthModule } from '../auth/AuthModule'
 
 @Module({
-  imports: [
-    PrismaModule,
-    forwardRef(() => UserModule),
-    ContentTypeModule,
-    AuthModule,
-  ],
+  imports: [PrismaModule, forwardRef(() => UserModule), ContentTypeModule, AuthModule],
   providers: [ProjectService, ProjectResolver],
   exports: [ProjectService],
 })

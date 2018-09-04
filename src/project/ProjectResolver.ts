@@ -3,9 +3,9 @@ import { UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
 import { UserService } from '../user/UserService'
-import { ProjectWithToken } from './ProjectWithToken'
 import { ContentType } from 'content-type/ContentType'
 import { ContentTypeField } from 'content-type/ContentTypeField'
+import { ProjectWithToken } from './ProjectWithToken'
 
 @Resolver('Project')
 @UseGuards(AuthGuard('jwt'))
@@ -15,13 +15,18 @@ export class ProjectResolver {
     private readonly projectService: ProjectService,
   ) {}
 
+  @Mutation()
+  async createProject(obj, { name }, context, info) {
+    return await this.projectService.buildProject(obj.user.id, name, 'Production', info)
+  }
+
   @Query()
   getProject(obj, { id }, context, info) {
     return this.projectService.getProject(id, obj.user, info)
   }
 
   @Query()
-  async getProjectWithToken(obj, { id }, context, info) {
+  async getProjectWithToken(obj, { id }, context, info): Promise<ProjectWithToken | null> {
     let project
     if (id) {
       project = await this.projectService.getProject(
@@ -30,16 +35,13 @@ export class ProjectResolver {
         '{id providedName generatedName stage}',
       )
     } else {
-      const user = await this.userService.getUserById(
-        obj.user.id,
-        '{projects {id providedName generatedName stage}}',
+      project = await this.projectService.getFirstUserProject(
+        obj.user,
+        '{id providedName generatedName stage}',
       )
-      if (user && user.projects) {
-        project = user.projects[0]
-      }
     }
     if (!project) {
-      throw new Error('User has no projects')
+      return null
     }
     const token = await this.projectService.generateProjectToken(project)
     return {
@@ -59,15 +61,6 @@ export class ProjectResolver {
       throw new Error(`Project ${id} does not exist`)
     }
     return this.projectService.generateProjectToken(project, false)
-  }
-
-  @Mutation()
-  async createProject(obj, { userId, name }, context, info) {
-    const user = await this.userService.getUserById(userId)
-    if (!user) {
-      throw new Error(`User with id ${userId} does not exist`)
-    }
-    return await this.projectService.buildProject(userId)
   }
 
   @Mutation()

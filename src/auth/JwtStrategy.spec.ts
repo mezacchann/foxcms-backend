@@ -35,12 +35,14 @@ describe('JwtStrategy', () => {
   it('should execute the verified function with the resolved user', async () => {
     const user = { id: 1, username: 'peter' }
     jest.spyOn(userService, 'getUserById').mockImplementation(() => user)
+    jest.spyOn(userService, 'getUser').mockImplementation(() => user)
     await jwtStrategy.validate({ sub: '1' }, verifiedCallback)
     expect(verifiedCallback).toBeCalledWith(null, user)
   })
 
   it('should execute the verified function with the Unauthorized Exception', async () => {
     jest.spyOn(userService, 'getUserById').mockImplementation(() => null)
+    jest.spyOn(userService, 'getUser').mockImplementation(() => null)
     await jwtStrategy.validate({ sub: '1' }, verifiedCallback)
     const exception = new UnauthorizedException()
     expect(verifiedCallback.mock.calls[0][0].status).toEqual(exception.getStatus())
