@@ -14,27 +14,11 @@ import Datamodel from '../prisma/Datamodel'
 
 @Injectable()
 export class ProjectService {
-  prismaServerEndpoint: URL
-  managementApiClient: GraphQLClient
   constructor(
-    @Inject('PrismaBinding') private prismaBinding: Prisma,
-    @Inject('PrismaManagementToken') private prismaManagementToken: string,
+    @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
+    @Inject('ManagementApiClient') private readonly managementApiClient: GraphQLClient,
     private contentTypeService: ContentTypeService,
-  ) {
-    if (process.env.PRISMA_SERVER_ENDPOINT) {
-      this.prismaServerEndpoint = new URL(process.env.PRISMA_SERVER_ENDPOINT)
-    } else {
-      throw new Error('Environment variable PRISMA_SERVER_ENDPOINT is not set')
-    }
-    this.managementApiClient = new GraphQLClient(
-      `${this.prismaServerEndpoint.origin}/management`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.prismaManagementToken}`,
-        },
-      },
-    )
-  }
+  ) {}
 
   private async checkUserPermission(projectId: number, user: User): Promise<void> {
     if (
