@@ -2,7 +2,6 @@ import { Resolver, Mutation, Query } from '@nestjs/graphql'
 import { UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectService } from './../project/ProjectService'
-import { UserService } from '../user/UserService'
 import { ContentType } from 'content-type/ContentType'
 import { ContentTypeField } from 'content-type/ContentTypeField'
 import { ProjectWithToken } from './ProjectWithToken'
@@ -10,10 +9,7 @@ import { ProjectWithToken } from './ProjectWithToken'
 @Resolver('Project')
 @UseGuards(AuthGuard('jwt'))
 export class ProjectResolver {
-  constructor(
-    private readonly userService: UserService,
-    private readonly projectService: ProjectService,
-  ) {}
+  constructor(private readonly projectService: ProjectService) {}
 
   @Mutation()
   async createProject(obj, { name }, context, info) {

@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common'
 import * as request from 'supertest'
 import { AppModule } from '../../app.module'
 import { ProjectModule } from '../ProjectModule'
-import { UserModule } from '../../user/UserModule'
 import { AuthModule } from '../../auth/AuthModule'
 import { ContentTypeModule } from '../../content-type/ContentTypeModule'
 import { Project } from '../../typings/prisma'
@@ -13,7 +12,7 @@ describe('Project', () => {
   let project: Project
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      imports: [AppModule, ProjectModule, ContentTypeModule, UserModule, AuthModule],
+      imports: [AppModule, ProjectModule, ContentTypeModule, AuthModule],
     }).compile()
     app = module.createNestApplication()
     await app.init()
