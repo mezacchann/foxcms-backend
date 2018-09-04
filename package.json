@@ -8,7 +8,7 @@
     "node": "10.8.0"
   },
   "scripts": {
-    "lint": "tslint -c ./tslint.json './src/**/*.ts' -e './src/typings/*.ts'",
+    "lint": "tslint -c ./tslint.json './src/**/*.ts' -e './src/typings/*.ts' -e './src/**/*.spec.ts' -e './src/**/*e2e-spec.ts'",
     "format": "prettier --write \"**/*.ts\"",
     "build": "tsc",
     "start": "npm run start:prod",
