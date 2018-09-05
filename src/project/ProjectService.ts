@@ -1,22 +1,20 @@
 import { Injectable, Inject } from '@nestjs/common'
 import * as jwt from 'jsonwebtoken'
-import { GraphQLClient } from 'graphql-request'
 import * as scuid from 'scuid'
-import { ADD_PROJECT, DEPLOY } from './mutations'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import User from 'user/User'
 import { Prisma, Project } from '../typings/prisma'
 import { ContentType } from 'content-type/ContentType'
 import { ContentTypeField } from 'content-type/ContentTypeField'
-import { DeployPayload } from 'prisma/DeployPayload'
 import Datamodel from '../prisma/Datamodel'
+import PrismaServer from '../prisma/PrismaServer'
 
 @Injectable()
 export class ProjectService {
   constructor(
     @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
-    @Inject('ManagementApiClient') private readonly managementApiClient: GraphQLClient,
+    private prismaServer: PrismaServer,
     private contentTypeService: ContentTypeService,
   ) {}
 
@@ -38,11 +36,8 @@ export class ProjectService {
     info = '{id}',
   ) {
     const projectName = scuid()
-    await this.managementApiClient.request(ADD_PROJECT, {
-      name: projectName,
-      stage,
-    })
-    await this.deploy(projectName, stage, Datamodel.DEFAULT)
+    await this.prismaServer.addService(projectName, stage)
+    await this.prismaServer.deploy(projectName, stage)
     return this.prismaBinding.mutation.createProject(
       {
         data: {
@@ -96,7 +91,7 @@ export class ProjectService {
   async addContentType(project: Project, typeName: string): Promise<string> {
     const datamodel = new Datamodel(project.datamodel)
     const modifiedDatamodel = datamodel.addType(typeName)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.prismaServer.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -113,7 +108,7 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new Datamodel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteType(contentType.name)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.prismaServer.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -138,7 +133,7 @@ export class ProjectService {
       field.type,
       field.isRequired,
     )
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.prismaServer.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
@@ -156,26 +151,12 @@ export class ProjectService {
     const { project } = contentType
     const datamodel = new Datamodel(project.datamodel)
     const modifiedDatamodel = datamodel.deleteField(contentType.name, contentTypeField.name)
-    await this.deploy(project.generatedName, project.stage, modifiedDatamodel)
+    await this.prismaServer.deploy(project.generatedName, project.stage, modifiedDatamodel)
     await this.updateProjectDatamodel(project.id, modifiedDatamodel)
     return modifiedDatamodel
   }
 
-  private async deploy(projectName: string, stage: string, datamodel: string): Promise<void> {
-    const newModel = datamodel !== '' ? datamodel : Datamodel.DEFAULT
-    const { deploy } = await this.managementApiClient.request<any>(DEPLOY, {
-      projectName,
-      stage,
-      types: newModel,
-      secrets: process.env.FOXCMS_SECRET + projectName,
-    })
-    const deployPayload = deploy as DeployPayload
-    if (deployPayload.errors.length > 0) {
-      throw new Error(`Cannot deploy datamodel: ${deployPayload.errors[0].description}`)
-    }
-  }
-
-  private async updateProjectDatamodel(projectId, datamodel: string) {
+  async updateProjectDatamodel(projectId, datamodel: string) {
     return this.prismaBinding.mutation.updateProject(
       {
         where: {
