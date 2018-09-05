@@ -7,7 +7,6 @@ import { AuthModule } from '../../auth/AuthModule'
 import { ContentTypeModule } from '../../content-type/ContentTypeModule'
 import { Project, ContentType } from '../../typings/prisma'
 import { ProjectWithToken } from '../ProjectWithToken'
-import Datamodel from '../../prisma/Datamodel'
 import { PrismaModule } from '../../prisma/PrismaModule'
 import PrismaServer from '../../prisma/PrismaServer'
 
@@ -218,6 +217,34 @@ describe('Project', () => {
       expect(contentType.description).toBe('my-description')
       expect(contentType.project.id).toBe(project.id)
       expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).toMatch(/type article/)
+    })
+    it('should add another content type to the given project and append it to the datamodel', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+              addContentType(projectId: "${
+                project.id
+              }", contentTypeName: "book", description: "i love books") {
+                name
+                description
+                project {
+                  id
+                }
+              }
+            }`,
+        })
+      const contentType = res.body.data.addContentType as ContentType
+      expect(contentType.name).toBe('book')
+      expect(contentType.description).toBe('i love books')
+      expect(contentType.project.id).toBe(project.id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).toMatch(/type article/)
+      expect(deployFn.mock.calls[0][2]).toMatch(/type book/)
     })
     it('should throw an error if content type already exist', async () => {
       const res = await request(app.getHttpServer())
@@ -230,6 +257,28 @@ describe('Project', () => {
               addContentType(projectId: "${
                 project.id
               }", contentTypeName: "article", description: "my-description") {
+                name
+                description
+                project {
+                  id
+                }
+              }
+            }`,
+        })
+      expect(res.body.errors).not.toBe(undefined)
+      expect(deployFn).toHaveBeenCalledTimes(0)
+    })
+    it('should throw an error if content type name is invalid', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+              addContentType(projectId: "${
+                project.id
+              }", contentTypeName: "book let", description: "my-description") {
                 name
                 description
                 project {
