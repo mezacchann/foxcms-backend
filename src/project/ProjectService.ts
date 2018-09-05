@@ -4,8 +4,6 @@ import * as scuid from 'scuid'
 import ContentTypeFieldCreateInput from '../content-type/ContentTypeFieldCreateInput'
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import { Prisma, Project, User } from '../typings/prisma'
-import { ContentType } from 'content-type/ContentType'
-import { ContentTypeField } from 'content-type/ContentTypeField'
 import Datamodel from '../prisma/Datamodel'
 import PrismaServer from '../prisma/PrismaServer'
 import { ContentTypeFieldType } from '../content-type/ContentTypeFieldType'
@@ -17,17 +15,6 @@ export class ProjectService {
     private prismaServer: PrismaServer,
     private contentTypeService: ContentTypeService,
   ) {}
-
-  private async checkUserPermission(projectId: number, user: User): Promise<void> {
-    if (
-      !(await this.prismaBinding.exists.Project({
-        id: projectId,
-        user: { id: user.id },
-      }))
-    ) {
-      throw new Error(`Cannot find project ${projectId}`)
-    }
-  }
 
   async buildProject(
     userId: string,
@@ -132,15 +119,14 @@ export class ProjectService {
     return modifiedDatamodel
   }
 
-  async deleteContentTypeField(id: number, user: User): Promise<string> {
-    const contentTypeField = (await this.contentTypeService.getContentTypeField(
+  async deleteContentTypeField(id: string, user: User): Promise<string> {
+    const contentTypeField = await this.contentTypeService.getContentTypeField(
       id,
       '{name contentType{name project{id generatedName stage datamodel}}}',
-    )) as ContentTypeField
+    )
     if (!contentTypeField) {
       throw new Error(`Content type field with id ${id} doesnt exist`)
     }
-    this.checkUserPermission(contentTypeField.contentType.project.id, user)
     const { contentType } = contentTypeField
     const { project } = contentType
     const datamodel = new Datamodel(project.datamodel)
