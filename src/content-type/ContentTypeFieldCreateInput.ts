@@ -1,7 +1,7 @@
-import { ContentTypeFieldType } from './ContentTypeFieldType'
+import { ContentTypeFieldType } from '../typings/prisma'
 
 export default interface ContentTypeFieldCreateInput {
-  contentTypeId?: number
+  contentTypeId: string
   name: string
   type: ContentTypeFieldType
   isRequired: boolean

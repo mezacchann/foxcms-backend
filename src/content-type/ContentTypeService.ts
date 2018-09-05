@@ -1,21 +1,21 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { Prisma } from 'prisma-binding'
 import { ContentTypeField } from './ContentTypeField'
-import { ContentType } from './ContentType'
+import { User, Prisma } from '../typings/prisma'
 
 @Injectable()
 export class ContentTypeService {
   constructor(@Inject('PrismaBinding') private prismaBinding: Prisma) {}
 
-  getContentType(id: number, info: any = '{id}'): Promise<ContentType> {
-    return this.prismaBinding.query.contentType(
+  async getContentType(id: string, user: User, info: any = '{id}') {
+    const types = await this.prismaBinding.query.contentTypes(
       {
         where: {
-          id,
+          AND: { project: { user: { id: user.id } }, id },
         },
       },
       info,
     )
+    return types[0]
   }
 
   getContentTypeField(id: number, info: any = '{id}'): Promise<ContentTypeField> {

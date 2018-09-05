@@ -5,16 +5,24 @@ import { AppModule } from '../../app.module'
 import { ProjectModule } from '../ProjectModule'
 import { AuthModule } from '../../auth/AuthModule'
 import { ContentTypeModule } from '../../content-type/ContentTypeModule'
-import { Project, ContentType } from '../../typings/prisma'
+import {
+  Project,
+  ContentType,
+  ContentTypeFieldType,
+  ContentTypeField,
+} from '../../typings/prisma'
 import { ProjectWithToken } from '../ProjectWithToken'
 import { PrismaModule } from '../../prisma/PrismaModule'
 import PrismaServer from '../../prisma/PrismaServer'
+import Datamodel from '../../prisma/Datamodel'
 
 jest.mock('../../prisma/PrismaServer')
 
 describe('Project', () => {
   let app: INestApplication
   let project: Project
+  const contentTypes: ContentType[] = []
+  let contentTypeFields: ContentTypeField[] = []
   let addServiceFn: jest.Mock<any>
   let deployFn: jest.Mock<any>
 
@@ -205,6 +213,7 @@ describe('Project', () => {
                 project.id
               }", contentTypeName: "article", description: "my-description") {
                 name
+                id
                 description
                 project {
                   id
@@ -213,6 +222,7 @@ describe('Project', () => {
             }`,
         })
       const contentType = res.body.data.addContentType as ContentType
+      contentTypes.push(contentType)
       expect(contentType.name).toBe('article')
       expect(contentType.description).toBe('my-description')
       expect(contentType.project.id).toBe(project.id)
@@ -231,6 +241,7 @@ describe('Project', () => {
                 project.id
               }", contentTypeName: "book", description: "i love books") {
                 name
+                id
                 description
                 project {
                   id
@@ -239,6 +250,7 @@ describe('Project', () => {
             }`,
         })
       const contentType = res.body.data.addContentType as ContentType
+      contentTypes.push(contentType)
       expect(contentType.name).toBe('book')
       expect(contentType.description).toBe('i love books')
       expect(contentType.project.id).toBe(project.id)
@@ -289,6 +301,170 @@ describe('Project', () => {
         })
       expect(res.body.errors).not.toBe(undefined)
       expect(deployFn).toHaveBeenCalledTimes(0)
+    })
+  })
+  describe('addContentTypeField', () => {
+    it('should add a field to type article', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            addContentTypeField(contentTypeField: {contentTypeId: "${
+              contentTypes[0].id
+            }", name: "author", type: String, isRequired: false}) {
+              id
+              name
+              contentType {
+                id
+              }
+            }
+          }`,
+        })
+      const field = res.body.data.addContentTypeField as ContentTypeField
+      contentTypeFields.push(field)
+      expect(field.contentType.id).toBe(contentTypes[0].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).toMatch(/author:String/)
+    })
+    it('should add a another field and append it to the datamodel', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            addContentTypeField(contentTypeField: {contentTypeId: "${
+              contentTypes[0].id
+            }", name: "available", type: Checkbox, isRequired: true}) {
+              id
+              name
+              contentType {
+                id
+              }
+            }
+          }`,
+        })
+      const field = res.body.data.addContentTypeField as ContentTypeField
+      contentTypeFields.push(field)
+      expect(field.contentType.id).toBe(contentTypes[0].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).toMatch(/author:String/)
+      expect(deployFn.mock.calls[0][2]).toMatch(/available:Boolean!/)
+    })
+  })
+  describe('deleteContentTypeField', () => {
+    it('should delete content type field', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentTypeField(id: "${contentTypeFields[0].id}") {
+              id
+            }
+          }`,
+        })
+      const field = res.body.data.deleteContentTypeField as ContentTypeField
+      expect(field.id).toBe(contentTypeFields[0].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).not.toMatch(/author:String/)
+      expect(deployFn.mock.calls[0][2]).toMatch(/available:Boolean!/)
+    })
+    it('should throw an error if content type field doesnt exist', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentTypeField(id: "123") {
+              id
+            }
+          }`,
+        })
+      expect(res.body.errors).not.toBe(undefined)
+      expect(deployFn).toHaveBeenCalledTimes(0)
+    })
+    it('should delete last content type field', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentTypeField(id: "${contentTypeFields[1].id}") {
+              id
+            }
+          }`,
+        })
+      const field = res.body.data.deleteContentTypeField as ContentTypeField
+      expect(field.id).toBe(contentTypeFields[1].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).not.toMatch(/author:String/)
+      expect(deployFn.mock.calls[0][2]).not.toMatch(/available:Boolean!/)
+    })
+  })
+  describe('deleteContentType', () => {
+    it('should delete content type', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentType(id: "${contentTypes[0].id}") {
+              id
+            }
+          }`,
+        })
+      const contentType = res.body.data.deleteContentType as ContentType
+      expect(contentType.id).toBe(contentTypes[0].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).not.toMatch(/type article/)
+      expect(deployFn.mock.calls[0][2]).toMatch(/type book/)
+    })
+    it('should throw an error if content type doesnt exist', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentType(id: "123") {
+              id
+            }
+          }`,
+        })
+      expect(res.body.errors).not.toBe(undefined)
+      expect(deployFn).toHaveBeenCalledTimes(0)
+    })
+    it('should delete last content type', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/graphql')
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .set('Authorization', `bearer ${process.env.TEST_TOKEN}`)
+        .send({
+          query: `mutation {
+            deleteContentType(id: "${contentTypes[1].id}") {
+              id
+            }
+          }`,
+        })
+      const contentType = res.body.data.deleteContentType as ContentType
+      expect(contentType.id).toBe(contentTypes[1].id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
+      expect(deployFn.mock.calls[0][2]).toMatch(Datamodel.DEFAULT)
     })
   })
 })
