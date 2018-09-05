@@ -51,7 +51,7 @@ export default class Datamodel {
       throw new Error('Type doesnt exist')
     }
     this.model = this.model.replace(new RegExp(this.typeRegex({ type })), '')
-    return this.model
+    return this.model === '' ? Datamodel.DEFAULT : this.model
   }
   deleteField(type: string, field: string) {
     if (!this.typeExists(type)) {

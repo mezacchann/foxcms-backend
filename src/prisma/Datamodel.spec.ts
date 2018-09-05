@@ -102,6 +102,10 @@ describe('deleteType', () => {
     const datamodel = new Datamodel(modelTemplate)
     expect(() => datamodel.deleteType('article20')).toThrow()
   })
+  it('should return the default datamodel when deleting the last type', () => {
+    const datamodel = new Datamodel(modelTemplate)
+    expect(() => datamodel.deleteType('article20')).toThrow()
+  })
 })
 
 describe('deleteField', () => {
@@ -119,6 +123,9 @@ describe('deleteField', () => {
   })
   it('should throw an error if type doesnt exist', () => {
     const datamodel = new Datamodel(modelTemplate)
-    expect(() => datamodel.deleteType('article20')).toThrow()
+    datamodel.deleteType('article')
+    datamodel.deleteType('article2')
+    datamodel.deleteType('article3')
+    expect(datamodel.deleteType('article4')).toBe(Datamodel.DEFAULT)
   })
 })
