@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { GraphQLClient } from 'graphql-request'
-import { DEPLOY, ADD_PROJECT } from '../project/mutations'
 import { DeployPayload, AddProjectMutation } from '../typings/managementApiTypes'
 import Datamodel from './Datamodel'
+import { ADD_PROJECT, DEPLOY } from './mutations'
 
 @Injectable()
 export default class PrismaServer {
