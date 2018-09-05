@@ -8,19 +8,31 @@ import { ContentTypeModule } from '../../content-type/ContentTypeModule'
 import { Project, ContentType } from '../../typings/prisma'
 import { ProjectWithToken } from '../ProjectWithToken'
 import Datamodel from '../../prisma/Datamodel'
-import { ProjectService } from '../ProjectService'
+import { PrismaModule } from '../../prisma/PrismaModule'
+import PrismaServer from '../../prisma/PrismaServer'
+
+jest.mock('../../prisma/PrismaServer')
 
 describe('Project', () => {
   let app: INestApplication
-  let projectService: ProjectService
   let project: Project
+  let addServiceFn: jest.Mock<any>
+  let deployFn: jest.Mock<any>
+
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      imports: [AppModule, ProjectModule, ContentTypeModule, AuthModule],
+      imports: [AppModule, PrismaModule, ProjectModule, ContentTypeModule, AuthModule],
     }).compile()
     app = module.createNestApplication()
-    projectService = app.get<ProjectService>(ProjectService)
+    const prismaServer = module.get<PrismaServer>(PrismaServer)
+    addServiceFn = prismaServer.addService as jest.Mock<any>
+    deployFn = prismaServer.deploy as jest.Mock<any>
     await app.init()
+  })
+
+  afterEach(() => {
+    addServiceFn.mockClear()
+    deployFn.mockClear()
   })
 
   it('should create a project', async () => {
@@ -35,7 +47,6 @@ describe('Project', () => {
               createProject(name: "${projectName}") {
                 id
                 providedName
-                datamodel
                 user {
                   username
                   id
@@ -47,7 +58,8 @@ describe('Project', () => {
     project = res.body.data.createProject as Project
     expect(project.providedName).toBe(projectName)
     expect(project.user.username).toBe(process.env.TEST_USER)
-    expect(project.datamodel).toBe(Datamodel.DEFAULT)
+    expect(addServiceFn).toHaveBeenCalledTimes(1)
+    expect(deployFn).toHaveBeenCalledTimes(1)
   })
   describe('getProject', () => {
     it('should retrieve a project from the db', async () => {
@@ -205,6 +217,7 @@ describe('Project', () => {
       expect(contentType.name).toBe('article')
       expect(contentType.description).toBe('my-description')
       expect(contentType.project.id).toBe(project.id)
+      expect(deployFn).toHaveBeenCalledTimes(1)
     })
     it('should throw an error if content type already exist', async () => {
       const res = await request(app.getHttpServer())
@@ -226,6 +239,7 @@ describe('Project', () => {
             }`,
         })
       expect(res.body.errors).not.toBe(undefined)
+      expect(deployFn).toHaveBeenCalledTimes(0)
     })
   })
 })
