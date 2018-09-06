@@ -1,4 +1,4 @@
-import { NestModule, Module, Inject, MiddlewareConsumer } from '@nestjs/common'
+import { NestModule, Module, Inject, MiddlewareConsumer, MulterModule } from '@nestjs/common'
 import { GraphQLModule, GraphQLFactory } from '@nestjs/graphql'
 import { graphqlExpress } from 'apollo-server-express'
 import { UserModule } from './user/UserModule'
@@ -7,7 +7,6 @@ import { PrismaModule } from './prisma/PrismaModule'
 import { AuthModule } from './auth/AuthModule'
 import { ProjectModule } from './project/ProjectModule'
 import { FileModule } from './file/FileModule'
-
 @Module({
   imports: [
     GraphQLModule,

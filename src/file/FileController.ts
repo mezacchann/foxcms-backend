@@ -1,9 +1,17 @@
-import { Get, Controller } from '@nestjs/common'
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  FileInterceptor,
+  UploadedFile,
+} from '@nestjs/common'
 
 @Controller('file')
 export class FileController {
-  @Get()
-  root(): string {
-    return 'Hello'
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file) {
+    console.log(file)
+    console.log('woow')
   }
 }
