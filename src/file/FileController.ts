@@ -54,7 +54,7 @@ export class FileController {
       where: { id: fileId },
     })
     if (!file) {
-      throw new Error('File does not exist')
+      throw new NotFoundException()
     } else if (!process.env.UPLOAD_DIR) {
       throw new Error('Fix later.')
     }
