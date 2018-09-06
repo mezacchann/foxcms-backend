@@ -6,6 +6,7 @@ import { ContentTypeModule } from './content-type/ContentTypeModule'
 import { PrismaModule } from './prisma/PrismaModule'
 import { AuthModule } from './auth/AuthModule'
 import { ProjectModule } from './project/ProjectModule'
+import { FileModule } from './file/FileModule'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ProjectModule } from './project/ProjectModule'
     PrismaModule,
     ProjectModule,
     AuthModule,
+    FileModule,
   ],
 })
 export class AppModule implements NestModule {
