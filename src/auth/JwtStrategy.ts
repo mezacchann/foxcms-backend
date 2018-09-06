@@ -1,12 +1,12 @@
 import { ExtractJwt, Strategy, VerifiedCallback } from 'passport-jwt'
 import { PassportStrategy } from '@nestjs/passport'
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, Inject } from '@nestjs/common'
 import { JwtPayload } from './JwtPayload'
-import { UserService } from '../user/UserService'
+import { Prisma } from '../typings/prisma'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly userService: UserService) {
+  constructor(@Inject('PrismaBinding') private readonly prismaBinding: Prisma) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.FOXCMS_SECRET,
@@ -14,9 +14,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload, done: VerifiedCallback) {
-    let user = await this.userService.getUserById(payload.sub)
+    let user = await this.prismaBinding.query.user({ where: { id: payload.sub } })
     if (process.env.NODE_ENV === 'test') {
-      user = await this.userService.getUser(process.env.TEST_USER ? process.env.TEST_USER : '')
+      user = await this.prismaBinding.query.user({
+        where: { username: process.env.TEST_USER },
+      })
     }
     if (!user) {
       done(new UnauthorizedException(), false)
