@@ -7,17 +7,20 @@ import {
   UseGuards,
   Inject,
   Param,
+  Delete,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectGuard } from '../project/ProjectGuard'
 import { Prisma } from '../typings/prisma'
-import * as multer from 'multer'
+import * as fs from 'fs'
+import * as path from 'path'
 
 @Controller('file')
-@UseGuards(AuthGuard('jwt'), ProjectGuard)
+@UseGuards(AuthGuard('jwt'))
 export class FileController {
   constructor(@Inject('PrismaBinding') private readonly prismaBinding: Prisma) {}
 
+  @UseGuards(ProjectGuard)
   @Post(':projectId')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file, @Param('projectId') projectId) {
@@ -31,5 +34,19 @@ export class FileController {
         project: { connect: { id: projectId } },
       },
     })
+  }
+
+  @Delete(':fileId')
+  async deleteFile(@Param('fileId') fileId) {
+    const file = await this.prismaBinding.mutation.deleteFile({
+      where: { id: fileId },
+    })
+    if (!file) {
+      throw new Error('File does not exist')
+    } else if (!process.env.UPLOAD_DIR) {
+      throw new Error('Fix later.')
+    }
+    fs.unlink(path.join(process.env.UPLOAD_DIR, file.fileName), err => console.log(err))
+    return file
   }
 }

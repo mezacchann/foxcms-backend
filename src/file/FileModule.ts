@@ -10,13 +10,13 @@ import { PrismaModule } from '../prisma/PrismaModule'
     MulterModule.register({
       storage: multer.diskStorage({
         destination: (req, file, cb) => {
-          if (!process.env.CONTENT_DIR) {
+          if (!process.env.UPLOAD_DIR) {
             throw new Error('Fix later')
           }
-          if (!fs.existsSync(process.env.CONTENT_DIR)) {
-            fs.mkdirSync(process.env.CONTENT_DIR)
+          if (!fs.existsSync(process.env.UPLOAD_DIR)) {
+            fs.mkdirSync(process.env.UPLOAD_DIR)
           }
-          cb(null, process.env.CONTENT_DIR)
+          cb(null, process.env.UPLOAD_DIR)
         },
       }),
     }),
