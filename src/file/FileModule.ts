@@ -2,6 +2,7 @@ import { Module, MulterModule } from '@nestjs/common'
 import { FileController } from './FileController'
 import * as multer from 'multer'
 import * as fs from 'fs'
+import { ProjectModule } from '../project/ProjectModule'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import * as fs from 'fs'
         },
       }),
     }),
+    ProjectModule,
   ],
   controllers: [FileController],
 })
