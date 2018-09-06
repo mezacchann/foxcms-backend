@@ -3,6 +3,7 @@ import { FileController } from './FileController'
 import * as multer from 'multer'
 import * as fs from 'fs'
 import { ProjectModule } from '../project/ProjectModule'
+import { PrismaModule } from '../prisma/PrismaModule'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProjectModule } from '../project/ProjectModule'
       }),
     }),
     ProjectModule,
+    PrismaModule,
   ],
   controllers: [FileController],
 })

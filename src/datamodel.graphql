@@ -61,8 +61,9 @@ type File {
   project: Project! @relation(name: "Files")
   createdAt: DateTime!
   updatedAt: DateTime!
-  name: String!
+  originalName: String!
+  fileName: String!
   size: Int!
-  contentType: String!
+  mimeType: String!
   url: String! @unique
 }

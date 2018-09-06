@@ -1,11 +1,15 @@
 # source: https://prisma-server.dokku.wpr-dev.com/foxcms/dev
-# timestamp: Mon Aug 20 2018 12:31:55 GMT+1000 (Ostaustralische Normalzeit)
+# timestamp: Thu Sep 06 2018 14:24:58 GMT+1000 (Ostaustralische Normalzeit)
 
 type AggregateContentType {
   count: Int!
 }
 
 type AggregateContentTypeField {
+  count: Int!
+}
+
+type AggregateFile {
   count: Int!
 }
 
@@ -82,6 +86,8 @@ type ContentTypeEdge {
 
 type ContentTypeField implements Node {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   contentType(where: ContentTypeWhereInput): ContentType!
   name: String!
   type: ContentTypeFieldType!
@@ -128,20 +134,22 @@ type ContentTypeFieldEdge {
 enum ContentTypeFieldOrderByInput {
   id_ASC
   id_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
   name_ASC
   name_DESC
   type_ASC
   type_DESC
   isRequired_ASC
   isRequired_DESC
-  updatedAt_ASC
-  updatedAt_DESC
-  createdAt_ASC
-  createdAt_DESC
 }
 
 type ContentTypeFieldPreviousValues {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   name: String!
   type: ContentTypeFieldType!
   isRequired: Boolean!
@@ -280,6 +288,50 @@ input ContentTypeFieldWhereInput {
 
   """All values not ending with the given string."""
   id_not_ends_with: ID
+  createdAt: DateTime
+
+  """All values that are not equal to given value."""
+  createdAt_not: DateTime
+
+  """All values that are contained in given list."""
+  createdAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  createdAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  createdAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  createdAt_lte: DateTime
+
+  """All values greater than the given value."""
+  createdAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+
+  """All values that are not equal to given value."""
+  updatedAt_not: DateTime
+
+  """All values that are contained in given list."""
+  updatedAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  updatedAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  updatedAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  updatedAt_lte: DateTime
+
+  """All values greater than the given value."""
+  updatedAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  updatedAt_gte: DateTime
   name: String
 
   """All values that are not equal to given value."""
@@ -638,6 +690,448 @@ input ContentTypeWhereUniqueInput {
 
 scalar DateTime
 
+type File implements Node {
+  id: ID!
+  project(where: ProjectWhereInput): Project!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  originalName: String!
+  fileName: String!
+  size: Int!
+  mimeType: String!
+  url: String!
+}
+
+"""A connection to a list of items."""
+type FileConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [FileEdge]!
+  aggregate: AggregateFile!
+}
+
+input FileCreateInput {
+  originalName: String!
+  fileName: String!
+  size: Int!
+  mimeType: String!
+  url: String!
+  project: ProjectCreateOneWithoutFilesInput!
+}
+
+input FileCreateManyWithoutProjectInput {
+  create: [FileCreateWithoutProjectInput!]
+  connect: [FileWhereUniqueInput!]
+}
+
+input FileCreateWithoutProjectInput {
+  originalName: String!
+  fileName: String!
+  size: Int!
+  mimeType: String!
+  url: String!
+}
+
+"""An edge in a connection."""
+type FileEdge {
+  """The item at the end of the edge."""
+  node: File!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum FileOrderByInput {
+  id_ASC
+  id_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  originalName_ASC
+  originalName_DESC
+  fileName_ASC
+  fileName_DESC
+  size_ASC
+  size_DESC
+  mimeType_ASC
+  mimeType_DESC
+  url_ASC
+  url_DESC
+}
+
+type FilePreviousValues {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  originalName: String!
+  fileName: String!
+  size: Int!
+  mimeType: String!
+  url: String!
+}
+
+type FileSubscriptionPayload {
+  mutation: MutationType!
+  node: File
+  updatedFields: [String!]
+  previousValues: FilePreviousValues
+}
+
+input FileSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [FileSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [FileSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [FileSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: FileWhereInput
+}
+
+input FileUpdateInput {
+  originalName: String
+  fileName: String
+  size: Int
+  mimeType: String
+  url: String
+  project: ProjectUpdateOneWithoutFilesInput
+}
+
+input FileUpdateManyWithoutProjectInput {
+  create: [FileCreateWithoutProjectInput!]
+  connect: [FileWhereUniqueInput!]
+  disconnect: [FileWhereUniqueInput!]
+  delete: [FileWhereUniqueInput!]
+  update: [FileUpdateWithWhereUniqueWithoutProjectInput!]
+  upsert: [FileUpsertWithWhereUniqueWithoutProjectInput!]
+}
+
+input FileUpdateWithoutProjectDataInput {
+  originalName: String
+  fileName: String
+  size: Int
+  mimeType: String
+  url: String
+}
+
+input FileUpdateWithWhereUniqueWithoutProjectInput {
+  where: FileWhereUniqueInput!
+  data: FileUpdateWithoutProjectDataInput!
+}
+
+input FileUpsertWithWhereUniqueWithoutProjectInput {
+  where: FileWhereUniqueInput!
+  update: FileUpdateWithoutProjectDataInput!
+  create: FileCreateWithoutProjectInput!
+}
+
+input FileWhereInput {
+  """Logical AND on all given filters."""
+  AND: [FileWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [FileWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [FileWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  createdAt: DateTime
+
+  """All values that are not equal to given value."""
+  createdAt_not: DateTime
+
+  """All values that are contained in given list."""
+  createdAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  createdAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  createdAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  createdAt_lte: DateTime
+
+  """All values greater than the given value."""
+  createdAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+
+  """All values that are not equal to given value."""
+  updatedAt_not: DateTime
+
+  """All values that are contained in given list."""
+  updatedAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  updatedAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  updatedAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  updatedAt_lte: DateTime
+
+  """All values greater than the given value."""
+  updatedAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  updatedAt_gte: DateTime
+  originalName: String
+
+  """All values that are not equal to given value."""
+  originalName_not: String
+
+  """All values that are contained in given list."""
+  originalName_in: [String!]
+
+  """All values that are not contained in given list."""
+  originalName_not_in: [String!]
+
+  """All values less than the given value."""
+  originalName_lt: String
+
+  """All values less than or equal the given value."""
+  originalName_lte: String
+
+  """All values greater than the given value."""
+  originalName_gt: String
+
+  """All values greater than or equal the given value."""
+  originalName_gte: String
+
+  """All values containing the given string."""
+  originalName_contains: String
+
+  """All values not containing the given string."""
+  originalName_not_contains: String
+
+  """All values starting with the given string."""
+  originalName_starts_with: String
+
+  """All values not starting with the given string."""
+  originalName_not_starts_with: String
+
+  """All values ending with the given string."""
+  originalName_ends_with: String
+
+  """All values not ending with the given string."""
+  originalName_not_ends_with: String
+  fileName: String
+
+  """All values that are not equal to given value."""
+  fileName_not: String
+
+  """All values that are contained in given list."""
+  fileName_in: [String!]
+
+  """All values that are not contained in given list."""
+  fileName_not_in: [String!]
+
+  """All values less than the given value."""
+  fileName_lt: String
+
+  """All values less than or equal the given value."""
+  fileName_lte: String
+
+  """All values greater than the given value."""
+  fileName_gt: String
+
+  """All values greater than or equal the given value."""
+  fileName_gte: String
+
+  """All values containing the given string."""
+  fileName_contains: String
+
+  """All values not containing the given string."""
+  fileName_not_contains: String
+
+  """All values starting with the given string."""
+  fileName_starts_with: String
+
+  """All values not starting with the given string."""
+  fileName_not_starts_with: String
+
+  """All values ending with the given string."""
+  fileName_ends_with: String
+
+  """All values not ending with the given string."""
+  fileName_not_ends_with: String
+  size: Int
+
+  """All values that are not equal to given value."""
+  size_not: Int
+
+  """All values that are contained in given list."""
+  size_in: [Int!]
+
+  """All values that are not contained in given list."""
+  size_not_in: [Int!]
+
+  """All values less than the given value."""
+  size_lt: Int
+
+  """All values less than or equal the given value."""
+  size_lte: Int
+
+  """All values greater than the given value."""
+  size_gt: Int
+
+  """All values greater than or equal the given value."""
+  size_gte: Int
+  mimeType: String
+
+  """All values that are not equal to given value."""
+  mimeType_not: String
+
+  """All values that are contained in given list."""
+  mimeType_in: [String!]
+
+  """All values that are not contained in given list."""
+  mimeType_not_in: [String!]
+
+  """All values less than the given value."""
+  mimeType_lt: String
+
+  """All values less than or equal the given value."""
+  mimeType_lte: String
+
+  """All values greater than the given value."""
+  mimeType_gt: String
+
+  """All values greater than or equal the given value."""
+  mimeType_gte: String
+
+  """All values containing the given string."""
+  mimeType_contains: String
+
+  """All values not containing the given string."""
+  mimeType_not_contains: String
+
+  """All values starting with the given string."""
+  mimeType_starts_with: String
+
+  """All values not starting with the given string."""
+  mimeType_not_starts_with: String
+
+  """All values ending with the given string."""
+  mimeType_ends_with: String
+
+  """All values not ending with the given string."""
+  mimeType_not_ends_with: String
+  url: String
+
+  """All values that are not equal to given value."""
+  url_not: String
+
+  """All values that are contained in given list."""
+  url_in: [String!]
+
+  """All values that are not contained in given list."""
+  url_not_in: [String!]
+
+  """All values less than the given value."""
+  url_lt: String
+
+  """All values less than or equal the given value."""
+  url_lte: String
+
+  """All values greater than the given value."""
+  url_gt: String
+
+  """All values greater than or equal the given value."""
+  url_gte: String
+
+  """All values containing the given string."""
+  url_contains: String
+
+  """All values not containing the given string."""
+  url_not_contains: String
+
+  """All values starting with the given string."""
+  url_starts_with: String
+
+  """All values not starting with the given string."""
+  url_not_starts_with: String
+
+  """All values ending with the given string."""
+  url_ends_with: String
+
+  """All values not ending with the given string."""
+  url_not_ends_with: String
+  project: ProjectWhereInput
+}
+
+input FileWhereUniqueInput {
+  id: ID
+  url: String
+}
+
 """
 The `Long` scalar type represents non-fractional signed whole numeric values.
 Long can represent values between -(2^63) and 2^63 - 1.
@@ -649,26 +1143,32 @@ type Mutation {
   createProject(data: ProjectCreateInput!): Project!
   createContentType(data: ContentTypeCreateInput!): ContentType!
   createContentTypeField(data: ContentTypeFieldCreateInput!): ContentTypeField!
+  createFile(data: FileCreateInput!): File!
   updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
   updateProject(data: ProjectUpdateInput!, where: ProjectWhereUniqueInput!): Project
   updateContentType(data: ContentTypeUpdateInput!, where: ContentTypeWhereUniqueInput!): ContentType
   updateContentTypeField(data: ContentTypeFieldUpdateInput!, where: ContentTypeFieldWhereUniqueInput!): ContentTypeField
+  updateFile(data: FileUpdateInput!, where: FileWhereUniqueInput!): File
   deleteUser(where: UserWhereUniqueInput!): User
   deleteProject(where: ProjectWhereUniqueInput!): Project
   deleteContentType(where: ContentTypeWhereUniqueInput!): ContentType
   deleteContentTypeField(where: ContentTypeFieldWhereUniqueInput!): ContentTypeField
+  deleteFile(where: FileWhereUniqueInput!): File
   upsertUser(where: UserWhereUniqueInput!, create: UserCreateInput!, update: UserUpdateInput!): User!
   upsertProject(where: ProjectWhereUniqueInput!, create: ProjectCreateInput!, update: ProjectUpdateInput!): Project!
   upsertContentType(where: ContentTypeWhereUniqueInput!, create: ContentTypeCreateInput!, update: ContentTypeUpdateInput!): ContentType!
   upsertContentTypeField(where: ContentTypeFieldWhereUniqueInput!, create: ContentTypeFieldCreateInput!, update: ContentTypeFieldUpdateInput!): ContentTypeField!
+  upsertFile(where: FileWhereUniqueInput!, create: FileCreateInput!, update: FileUpdateInput!): File!
   updateManyUsers(data: UserUpdateInput!, where: UserWhereInput): BatchPayload!
   updateManyProjects(data: ProjectUpdateInput!, where: ProjectWhereInput): BatchPayload!
   updateManyContentTypes(data: ContentTypeUpdateInput!, where: ContentTypeWhereInput): BatchPayload!
   updateManyContentTypeFields(data: ContentTypeFieldUpdateInput!, where: ContentTypeFieldWhereInput): BatchPayload!
+  updateManyFiles(data: FileUpdateInput!, where: FileWhereInput): BatchPayload!
   deleteManyUsers(where: UserWhereInput): BatchPayload!
   deleteManyProjects(where: ProjectWhereInput): BatchPayload!
   deleteManyContentTypes(where: ContentTypeWhereInput): BatchPayload!
   deleteManyContentTypeFields(where: ContentTypeFieldWhereInput): BatchPayload!
+  deleteManyFiles(where: FileWhereInput): BatchPayload!
 }
 
 enum MutationType {
@@ -700,6 +1200,8 @@ type PageInfo {
 
 type Project implements Node {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   user(where: UserWhereInput): User!
   types(where: ContentTypeWhereInput, orderBy: ContentTypeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [ContentType!]
   providedName: String!
@@ -707,6 +1209,7 @@ type Project implements Node {
   stage: String!
   secret: String
   datamodel: String!
+  files(where: FileWhereInput, orderBy: FileOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [File!]
 }
 
 """A connection to a list of items."""
@@ -727,6 +1230,7 @@ input ProjectCreateInput {
   datamodel: String
   user: UserCreateOneWithoutProjectsInput!
   types: ContentTypeCreateManyWithoutProjectInput
+  files: FileCreateManyWithoutProjectInput
 }
 
 input ProjectCreateManyWithoutUserInput {
@@ -734,9 +1238,24 @@ input ProjectCreateManyWithoutUserInput {
   connect: [ProjectWhereUniqueInput!]
 }
 
+input ProjectCreateOneWithoutFilesInput {
+  create: ProjectCreateWithoutFilesInput
+  connect: ProjectWhereUniqueInput
+}
+
 input ProjectCreateOneWithoutTypesInput {
   create: ProjectCreateWithoutTypesInput
   connect: ProjectWhereUniqueInput
+}
+
+input ProjectCreateWithoutFilesInput {
+  providedName: String!
+  generatedName: String!
+  stage: String!
+  secret: String
+  datamodel: String
+  user: UserCreateOneWithoutProjectsInput!
+  types: ContentTypeCreateManyWithoutProjectInput
 }
 
 input ProjectCreateWithoutTypesInput {
@@ -746,6 +1265,7 @@ input ProjectCreateWithoutTypesInput {
   secret: String
   datamodel: String
   user: UserCreateOneWithoutProjectsInput!
+  files: FileCreateManyWithoutProjectInput
 }
 
 input ProjectCreateWithoutUserInput {
@@ -755,6 +1275,7 @@ input ProjectCreateWithoutUserInput {
   secret: String
   datamodel: String
   types: ContentTypeCreateManyWithoutProjectInput
+  files: FileCreateManyWithoutProjectInput
 }
 
 """An edge in a connection."""
@@ -769,6 +1290,10 @@ type ProjectEdge {
 enum ProjectOrderByInput {
   id_ASC
   id_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
   providedName_ASC
   providedName_DESC
   generatedName_ASC
@@ -779,14 +1304,12 @@ enum ProjectOrderByInput {
   secret_DESC
   datamodel_ASC
   datamodel_DESC
-  updatedAt_ASC
-  updatedAt_DESC
-  createdAt_ASC
-  createdAt_DESC
 }
 
 type ProjectPreviousValues {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   providedName: String!
   generatedName: String!
   stage: String!
@@ -841,6 +1364,7 @@ input ProjectUpdateInput {
   datamodel: String
   user: UserUpdateOneWithoutProjectsInput
   types: ContentTypeUpdateManyWithoutProjectInput
+  files: FileUpdateManyWithoutProjectInput
 }
 
 input ProjectUpdateManyWithoutUserInput {
@@ -852,12 +1376,30 @@ input ProjectUpdateManyWithoutUserInput {
   upsert: [ProjectUpsertWithWhereUniqueWithoutUserInput!]
 }
 
+input ProjectUpdateOneWithoutFilesInput {
+  create: ProjectCreateWithoutFilesInput
+  connect: ProjectWhereUniqueInput
+  delete: Boolean
+  update: ProjectUpdateWithoutFilesDataInput
+  upsert: ProjectUpsertWithoutFilesInput
+}
+
 input ProjectUpdateOneWithoutTypesInput {
   create: ProjectCreateWithoutTypesInput
   connect: ProjectWhereUniqueInput
   delete: Boolean
   update: ProjectUpdateWithoutTypesDataInput
   upsert: ProjectUpsertWithoutTypesInput
+}
+
+input ProjectUpdateWithoutFilesDataInput {
+  providedName: String
+  generatedName: String
+  stage: String
+  secret: String
+  datamodel: String
+  user: UserUpdateOneWithoutProjectsInput
+  types: ContentTypeUpdateManyWithoutProjectInput
 }
 
 input ProjectUpdateWithoutTypesDataInput {
@@ -867,6 +1409,7 @@ input ProjectUpdateWithoutTypesDataInput {
   secret: String
   datamodel: String
   user: UserUpdateOneWithoutProjectsInput
+  files: FileUpdateManyWithoutProjectInput
 }
 
 input ProjectUpdateWithoutUserDataInput {
@@ -876,11 +1419,17 @@ input ProjectUpdateWithoutUserDataInput {
   secret: String
   datamodel: String
   types: ContentTypeUpdateManyWithoutProjectInput
+  files: FileUpdateManyWithoutProjectInput
 }
 
 input ProjectUpdateWithWhereUniqueWithoutUserInput {
   where: ProjectWhereUniqueInput!
   data: ProjectUpdateWithoutUserDataInput!
+}
+
+input ProjectUpsertWithoutFilesInput {
+  update: ProjectUpdateWithoutFilesDataInput!
+  create: ProjectCreateWithoutFilesInput!
 }
 
 input ProjectUpsertWithoutTypesInput {
@@ -943,6 +1492,50 @@ input ProjectWhereInput {
 
   """All values not ending with the given string."""
   id_not_ends_with: ID
+  createdAt: DateTime
+
+  """All values that are not equal to given value."""
+  createdAt_not: DateTime
+
+  """All values that are contained in given list."""
+  createdAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  createdAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  createdAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  createdAt_lte: DateTime
+
+  """All values greater than the given value."""
+  createdAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+
+  """All values that are not equal to given value."""
+  updatedAt_not: DateTime
+
+  """All values that are contained in given list."""
+  updatedAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  updatedAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  updatedAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  updatedAt_lte: DateTime
+
+  """All values greater than the given value."""
+  updatedAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  updatedAt_gte: DateTime
   providedName: String
 
   """All values that are not equal to given value."""
@@ -1147,6 +1740,9 @@ input ProjectWhereInput {
   types_every: ContentTypeWhereInput
   types_some: ContentTypeWhereInput
   types_none: ContentTypeWhereInput
+  files_every: FileWhereInput
+  files_some: FileWhereInput
+  files_none: FileWhereInput
 }
 
 input ProjectWhereUniqueInput {
@@ -1159,14 +1755,17 @@ type Query {
   projects(where: ProjectWhereInput, orderBy: ProjectOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Project]!
   contentTypes(where: ContentTypeWhereInput, orderBy: ContentTypeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [ContentType]!
   contentTypeFields(where: ContentTypeFieldWhereInput, orderBy: ContentTypeFieldOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [ContentTypeField]!
+  files(where: FileWhereInput, orderBy: FileOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [File]!
   user(where: UserWhereUniqueInput!): User
   project(where: ProjectWhereUniqueInput!): Project
   contentType(where: ContentTypeWhereUniqueInput!): ContentType
   contentTypeField(where: ContentTypeFieldWhereUniqueInput!): ContentTypeField
+  file(where: FileWhereUniqueInput!): File
   usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
   projectsConnection(where: ProjectWhereInput, orderBy: ProjectOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): ProjectConnection!
   contentTypesConnection(where: ContentTypeWhereInput, orderBy: ContentTypeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): ContentTypeConnection!
   contentTypeFieldsConnection(where: ContentTypeFieldWhereInput, orderBy: ContentTypeFieldOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): ContentTypeFieldConnection!
+  filesConnection(where: FileWhereInput, orderBy: FileOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): FileConnection!
 
   """Fetches an object given its ID"""
   node(
@@ -1180,10 +1779,13 @@ type Subscription {
   project(where: ProjectSubscriptionWhereInput): ProjectSubscriptionPayload
   contentType(where: ContentTypeSubscriptionWhereInput): ContentTypeSubscriptionPayload
   contentTypeField(where: ContentTypeFieldSubscriptionWhereInput): ContentTypeFieldSubscriptionPayload
+  file(where: FileSubscriptionWhereInput): FileSubscriptionPayload
 }
 
 type User implements Node {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   username: String!
   password: String!
   salt: String!
@@ -1233,6 +1835,10 @@ type UserEdge {
 enum UserOrderByInput {
   id_ASC
   id_DESC
+  createdAt_ASC
+  createdAt_DESC
+  updatedAt_ASC
+  updatedAt_DESC
   username_ASC
   username_DESC
   password_ASC
@@ -1241,14 +1847,12 @@ enum UserOrderByInput {
   salt_DESC
   imageUri_ASC
   imageUri_DESC
-  updatedAt_ASC
-  updatedAt_DESC
-  createdAt_ASC
-  createdAt_DESC
 }
 
 type UserPreviousValues {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   username: String!
   password: String!
   salt: String!
@@ -1371,6 +1975,50 @@ input UserWhereInput {
 
   """All values not ending with the given string."""
   id_not_ends_with: ID
+  createdAt: DateTime
+
+  """All values that are not equal to given value."""
+  createdAt_not: DateTime
+
+  """All values that are contained in given list."""
+  createdAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  createdAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  createdAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  createdAt_lte: DateTime
+
+  """All values greater than the given value."""
+  createdAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  createdAt_gte: DateTime
+  updatedAt: DateTime
+
+  """All values that are not equal to given value."""
+  updatedAt_not: DateTime
+
+  """All values that are contained in given list."""
+  updatedAt_in: [DateTime!]
+
+  """All values that are not contained in given list."""
+  updatedAt_not_in: [DateTime!]
+
+  """All values less than the given value."""
+  updatedAt_lt: DateTime
+
+  """All values less than or equal the given value."""
+  updatedAt_lte: DateTime
+
+  """All values greater than the given value."""
+  updatedAt_gt: DateTime
+
+  """All values greater than or equal the given value."""
+  updatedAt_gte: DateTime
   username: String
 
   """All values that are not equal to given value."""
