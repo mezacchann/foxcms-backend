@@ -44,6 +44,7 @@
     "prisma-binding": "^2.1.5",
     "reflect-metadata": "^0.1.12",
     "scuid": "^1.1.0",
+    "sharp": "^0.20.8",
     "typescript": "^3.0.3",
     "voca": "^1.4.0"
   },
@@ -59,6 +60,7 @@
     "@types/node": "^10.9.4",
     "@types/node-cache": "^4.1.1",
     "@types/passport-jwt": "^3.0.1",
+    "@types/sharp": "^0.17.10",
     "@types/supertest": "^2.0.5",
     "@types/voca": "^1.4.0",
     "jest": "^23.5.0",

@@ -10,6 +10,8 @@ import {
   Delete,
   Get,
   Res,
+  Query,
+  NotFoundException,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectGuard } from '../project/ProjectGuard'
@@ -18,6 +20,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { FileGuard } from './FileGuard'
 import { FileService } from './FileService'
+import * as sharp from 'sharp'
+import { OptionalInt } from '../pipes/OptionalInt'
 
 @Controller('file')
 @UseGuards(AuthGuard('jwt'))
@@ -60,12 +64,23 @@ export class FileController {
 
   @UseGuards(FileGuard)
   @Get(':fileId')
-  async getFile(@Param('fileId') fileId, @Res() res) {
+  async getFile(
+    @Param('fileId') fileId,
+    @Query('width', OptionalInt) width,
+    @Query('height', OptionalInt) height,
+    @Res() res,
+  ) {
     const file = await this.fileService.getFileById(fileId, '{fileName,mimeType}')
     if (!file || !process.env.UPLOAD_DIR) {
-      throw new Error('Fix later.')
+      throw new NotFoundException()
+    }
+    let fileBuffer = fs.readFileSync(path.join(process.env.UPLOAD_DIR, file.fileName))
+    if (file.mimeType.match(/image/) && (height || width)) {
+      fileBuffer = await sharp(fileBuffer)
+        .resize(width, height)
+        .toBuffer()
     }
     res.set('Content-Type', file.mimeType)
-    return res.sendFile(path.join(process.env.UPLOAD_DIR, file.fileName))
+    res.end(fileBuffer)
   }
 }
