@@ -8,17 +8,24 @@ import {
   Inject,
   Param,
   Delete,
+  Get,
+  Res,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectGuard } from '../project/ProjectGuard'
 import { Prisma } from '../typings/prisma'
 import * as fs from 'fs'
 import * as path from 'path'
+import { FileGuard } from './FileGuard'
+import { FileService } from './FileService'
 
 @Controller('file')
 @UseGuards(AuthGuard('jwt'))
 export class FileController {
-  constructor(@Inject('PrismaBinding') private readonly prismaBinding: Prisma) {}
+  constructor(
+    @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
+    private readonly fileService: FileService,
+  ) {}
 
   @UseGuards(ProjectGuard)
   @Post(':projectId')
@@ -36,6 +43,7 @@ export class FileController {
     })
   }
 
+  @UseGuards(FileGuard)
   @Delete(':fileId')
   async deleteFile(@Param('fileId') fileId) {
     const file = await this.prismaBinding.mutation.deleteFile({
@@ -48,5 +56,16 @@ export class FileController {
     }
     fs.unlink(path.join(process.env.UPLOAD_DIR, file.fileName), err => console.log(err))
     return file
+  }
+
+  @UseGuards(FileGuard)
+  @Get(':fileId')
+  async getFile(@Param('fileId') fileId, @Res() res) {
+    const file = await this.fileService.getFileById(fileId, '{fileName,mimeType}')
+    if (!file || !process.env.UPLOAD_DIR) {
+      throw new Error('Fix later.')
+    }
+    res.set('Content-Type', file.mimeType)
+    return res.sendFile(path.join(process.env.UPLOAD_DIR, file.fileName))
   }
 }

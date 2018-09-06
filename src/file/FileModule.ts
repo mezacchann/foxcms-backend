@@ -4,6 +4,7 @@ import * as multer from 'multer'
 import * as fs from 'fs'
 import { ProjectModule } from '../project/ProjectModule'
 import { PrismaModule } from '../prisma/PrismaModule'
+import { FileService } from './FileService'
 
 @Module({
   imports: [
@@ -24,5 +25,6 @@ import { PrismaModule } from '../prisma/PrismaModule'
     PrismaModule,
   ],
   controllers: [FileController],
+  providers: [FileService],
 })
 export class FileModule {}
