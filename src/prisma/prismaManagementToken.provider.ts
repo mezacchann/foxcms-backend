@@ -1,12 +1,11 @@
 import * as jwt from 'jsonwebtoken'
+import { ConfigService } from '../config/ConfigService'
 
 export const prismaManagementToken = {
   provide: 'PrismaManagementToken',
-  useFactory: () => {
-    if (!process.env.FOXCMS_SECRET) {
-      throw new Error('Environment variable FOXCMS_SECRET is not set')
-    }
-    return jwt.sign({ grants: [{ target: '*/*', action: '*' }] }, process.env.FOXCMS_SECRET, {
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService) => {
+    return jwt.sign({ grants: [{ target: '*/*', action: '*' }] }, configService.foxCmsSecret, {
       expiresIn: '2y',
     })
   },

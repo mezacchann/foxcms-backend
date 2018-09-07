@@ -8,11 +8,13 @@ import { AppModule } from '../../app.module'
 import { ProjectModule } from '../../project/ProjectModule'
 import { ProjectService } from '../../project/ProjectService'
 import { UserService } from '../UserService'
+import { ConfigService } from '../../config/ConfigService'
 
 describe('User', () => {
   let app: INestApplication
   const projectService = { buildProject: jest.fn() }
   let userService: UserService
+  let configService: ConfigService
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -21,10 +23,9 @@ describe('User', () => {
       .overrideProvider(ProjectService)
       .useValue(projectService)
       .compile()
-
     app = module.createNestApplication()
     userService = module.get<UserService>(UserService)
-
+    configService = module.get<ConfigService>(ConfigService)
     await app.init()
   })
   beforeEach(() => projectService.buildProject.mockReset())
@@ -33,8 +34,8 @@ describe('User', () => {
       const res = await request(app.getHttpServer())
         .post('/graphql')
         .send({
-          query: `query{login(username: "${process.env.TEST_USER}", password: "${
-            process.env.TEST_PASSWORD
+          query: `query{login(username: "${configService.testUser}", password: "${
+            configService.testPassword
           }")}`,
         })
         .expect(200)
@@ -46,7 +47,7 @@ describe('User', () => {
         .post('/graphql')
         .send({
           query: `query{login(username: "${
-            process.env.TEST_USER
+            configService.testUser
           }", password: "wrongPassword")}`,
         })
       expect(res.body.errors).not.toBe(undefined)

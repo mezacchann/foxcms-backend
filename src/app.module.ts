@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/PrismaModule'
 import { AuthModule } from './auth/AuthModule'
 import { ProjectModule } from './project/ProjectModule'
 import { FileModule } from './file/FileModule'
+import { ConfigModule } from './config/ConfigModule'
 @Module({
   imports: [
     GraphQLModule,
@@ -16,6 +17,7 @@ import { FileModule } from './file/FileModule'
     ProjectModule,
     AuthModule,
     FileModule,
+    ConfigModule,
   ],
 })
 export class AppModule implements NestModule {

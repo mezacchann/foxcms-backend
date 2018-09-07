@@ -1,13 +1,12 @@
 import * as jwt from 'jsonwebtoken'
 import { Injectable } from '@nestjs/common'
 import { JwtPayload } from './JwtPayload'
+import { ConfigService } from '../config/ConfigService'
 
 @Injectable()
 export class AuthService {
+  constructor(private readonly configService: ConfigService) {}
   createToken(jwtPayload: JwtPayload): string {
-    if (!process.env.FOXCMS_SECRET) {
-      throw new Error('Environment variable FOXCMS_SECRET is not set')
-    }
-    return jwt.sign(jwtPayload, process.env.FOXCMS_SECRET, { expiresIn: '1h' })
+    return jwt.sign(jwtPayload, this.configService.foxCmsSecret, { expiresIn: '1h' })
   }
 }

@@ -71,3 +71,4 @@ jspm_packages/
 src/generatedPrismaSchema/prisma.graphql
 dist/*
 prisma/dynamicModel.graphql
+development.env

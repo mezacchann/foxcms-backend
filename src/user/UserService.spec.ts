@@ -5,6 +5,7 @@ import { AuthService } from '../auth/AuthService'
 import { ProjectService } from '../project/ProjectService'
 import { ContentTypeService } from '../content-type/ContentTypeService'
 import { Prisma } from '../typings/prisma'
+import { ConfigService } from '../config/ConfigService'
 
 const PrismaBinding = jest.fn<Prisma>(() => ({
   mutation: {
@@ -26,6 +27,7 @@ describe('UserService', () => {
         AuthService,
         ProjectService,
         ContentTypeService,
+        { provide: ConfigService, useValue: new ConfigService(`test.env`) },
         { provide: 'PrismaBinding', useValue: binding },
         { provide: 'PrismaServer', useValue: {} },
         { provide: 'PrismaManagementToken', useValue: '' },

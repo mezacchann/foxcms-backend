@@ -3,21 +3,25 @@ import { PassportStrategy } from '@nestjs/passport'
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common'
 import { JwtPayload } from './JwtPayload'
 import { Prisma } from '../typings/prisma'
+import { ConfigService } from '../config/ConfigService'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(@Inject('PrismaBinding') private readonly prismaBinding: Prisma) {
+  constructor(
+    @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
+    private readonly configService: ConfigService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.FOXCMS_SECRET,
+      secretOrKey: configService.foxCmsSecret,
     })
   }
 
   async validate(payload: JwtPayload, done: VerifiedCallback) {
     let user = await this.prismaBinding.query.user({ where: { id: payload.sub } })
-    if (process.env.NODE_ENV === 'test') {
+    if (this.configService.nodeEnv === 'test') {
       user = await this.prismaBinding.query.user({
-        where: { username: process.env.TEST_USER },
+        where: { username: this.configService.testUser },
       })
     }
     if (!user) {

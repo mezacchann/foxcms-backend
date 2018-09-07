@@ -23,6 +23,7 @@ import { FileGuard } from './FileGuard'
 import { FileService } from './FileService'
 import * as sharp from 'sharp'
 import { OptionalInt } from '../pipes/OptionalInt'
+import { ConfigService } from '../config/ConfigService'
 
 const prefix = 'file'
 @Controller(prefix)
@@ -31,6 +32,7 @@ export class FileController {
   constructor(
     @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
     private readonly fileService: FileService,
+    private configService: ConfigService,
   ) {}
 
   @UseGuards(ProjectGuard)
@@ -64,10 +66,8 @@ export class FileController {
     })
     if (!file) {
       throw new NotFoundException()
-    } else if (!process.env.UPLOAD_DIR) {
-      throw new Error('Fix later.')
     }
-    fs.unlink(path.join(process.env.UPLOAD_DIR, file.fileName), err => console.log(err))
+    fs.unlink(path.join(this.configService.uploadDir, file.fileName), err => console.log(err))
     return file
   }
 
@@ -80,10 +80,10 @@ export class FileController {
     @Res() res,
   ) {
     const file = await this.fileService.getFileById(fileId, '{fileName,mimeType}')
-    if (!file || !process.env.UPLOAD_DIR) {
+    if (!file) {
       throw new NotFoundException()
     }
-    let fileBuffer = fs.readFileSync(path.join(process.env.UPLOAD_DIR, file.fileName))
+    let fileBuffer = fs.readFileSync(path.join(this.configService.uploadDir, file.fileName))
     if (file.mimeType.match(/image/) && (height || width)) {
       fileBuffer = await sharp(fileBuffer)
         .resize(width, height)
