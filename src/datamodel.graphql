@@ -62,7 +62,7 @@ type File {
   createdAt: DateTime!
   updatedAt: DateTime!
   originalName: String!
-  fileName: String!
+  fileName: String! @unique
   size: Int!
   mimeType: String!
   url: String! @unique

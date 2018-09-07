@@ -12,6 +12,7 @@ import {
   Res,
   Query,
   NotFoundException,
+  Req,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { ProjectGuard } from '../project/ProjectGuard'
@@ -23,7 +24,8 @@ import { FileService } from './FileService'
 import * as sharp from 'sharp'
 import { OptionalInt } from '../pipes/OptionalInt'
 
-@Controller('file')
+const prefix = 'file'
+@Controller(prefix)
 @UseGuards(AuthGuard('jwt'))
 export class FileController {
   constructor(
@@ -34,8 +36,8 @@ export class FileController {
   @UseGuards(ProjectGuard)
   @Post(':projectId')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file, @Param('projectId') projectId) {
-    return this.prismaBinding.mutation.createFile({
+  async uploadFile(@Req() req, @UploadedFile() file, @Param('projectId') projectId) {
+    const createdFile = await this.prismaBinding.mutation.createFile({
       data: {
         originalName: file.originalname,
         fileName: file.filename,
@@ -45,6 +47,13 @@ export class FileController {
         project: { connect: { id: projectId } },
       },
     })
+    return this.prismaBinding.mutation.updateFile(
+      {
+        data: { url: path.join(req.get('host'), prefix, createdFile.id) },
+        where: { id: createdFile.id },
+      },
+      '{originalName, url}',
+    )
   }
 
   @UseGuards(FileGuard)
