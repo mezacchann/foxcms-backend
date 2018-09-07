@@ -3,12 +3,7 @@ import { ConfigService } from './ConfigService'
 
 @Global()
 @Module({
-  providers: [
-    {
-      provide: ConfigService,
-      useValue: new ConfigService(`${process.env.NODE_ENV}.env`),
-    },
-  ],
+  providers: [ConfigService],
   exports: [ConfigService],
 })
 export class ConfigModule {}

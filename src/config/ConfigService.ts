@@ -8,7 +8,7 @@ export interface EnvConfig {
 export class ConfigService {
   private readonly envConfig: EnvConfig
 
-  constructor(filePath: string) {
+  constructor(filePath: string = `${process.env.NODE_ENV}.env`) {
     const config = dotenv.parse(fs.readFileSync(filePath))
     this.envConfig = this.validateInput(config)
   }
@@ -17,12 +17,14 @@ export class ConfigService {
     const envVarsSchema: Joi.ObjectSchema = Joi.object({
       NODE_ENV: Joi.string()
         .valid(['development', 'production', 'test'])
-        .default('development'),
+        .required(),
       PRISMA_SERVER: Joi.string().required(),
       FOXCMS_SECRET: Joi.string().required(),
       PRISMA_MANAGEMENT_API_SECRET: Joi.string().required(),
       UPLOAD_DIR: Joi.string().required(),
       TEST_USER: Joi.string().default('peter'),
+      TEST_PASSWORD: Joi.string(),
+      TEST_TOKEN: Joi.string(),
     })
 
     const { error, value: validatedEnvConfig } = Joi.validate(envConfig, envVarsSchema)
@@ -54,5 +56,13 @@ export class ConfigService {
 
   get testUser(): string {
     return String(this.envConfig.TEST_USER)
+  }
+
+  get testPassword(): string {
+    return String(this.envConfig.TEST_PASSWORD)
+  }
+
+  get testToken(): string {
+    return String(this.envConfig.TEST_TOKEN)
   }
 }
