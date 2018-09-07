@@ -84,9 +84,6 @@
     "collectCoverageFrom": [
       "**/*.ts"
     ],
-    "setupFiles": [
-      "../testSetup.ts"
-    ],
     "moduleFileExtensions": [
       "js",
       "json",
