@@ -21,6 +21,7 @@ type Project {
   stage: String!
   secret: String
   datamodel: String! @default(value: "")
+  files: [File!]! @relation(name: "Files", onDelete: CASCADE)
 }
 
 type ContentType {
@@ -53,4 +54,16 @@ enum ContentTypeFieldType {
   Json
   Image
   File
+}
+
+type File {
+  id: ID! @unique
+  project: Project! @relation(name: "Files")
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  originalName: String!
+  fileName: String! @unique
+  size: Int!
+  mimeType: String!
+  url: String! @unique
 }
