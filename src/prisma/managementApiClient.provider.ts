@@ -1,14 +1,12 @@
 import { GraphQLClient } from 'graphql-request'
+import { ConfigService } from '../config/ConfigService'
 
 export const managementApiClient = {
   provide: 'ManagementApiClient',
-  inject: ['PrismaManagementToken'],
-  useFactory: (prismaManagementToken: string): GraphQLClient => {
-    if (!process.env.PRISMA_SERVER_ENDPOINT) {
-      throw new Error('Environment variable PRISMA_SERVER_ENDPOINT is not set')
-    }
+  inject: ['PrismaManagementToken', ConfigService],
+  useFactory: (prismaManagementToken: string, configService: ConfigService): GraphQLClient => {
     const client = new GraphQLClient(
-      `${new URL(process.env.PRISMA_SERVER_ENDPOINT).origin}/management`,
+      `${new URL(configService.prismaServer).origin}/management`,
       {
         headers: {
           Authorization: `Bearer ${prismaManagementToken}`,

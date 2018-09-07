@@ -1,12 +1,14 @@
 import { Prisma } from 'prisma-binding'
+import { ConfigService } from '../config/ConfigService'
 
 export const prismaBinding = {
   provide: 'PrismaBinding',
-  useFactory: (): Prisma => {
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService): Prisma => {
     return new Prisma({
       typeDefs: './prisma/generated/prisma.graphql',
-      endpoint: process.env.PRISMA_SERVER_ENDPOINT,
-      secret: process.env.FOXCMS_SECRET,
+      endpoint: configService.prismaServer,
+      secret: configService.foxCmsSecret,
     })
   },
 }

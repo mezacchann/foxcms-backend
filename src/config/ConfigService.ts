@@ -22,6 +22,7 @@ export class ConfigService {
       FOXCMS_SECRET: Joi.string().required(),
       PRISMA_MANAGEMENT_API_SECRET: Joi.string().required(),
       UPLOAD_DIR: Joi.string().required(),
+      TEST_USER: Joi.string().default('peter'),
     })
 
     const { error, value: validatedEnvConfig } = Joi.validate(envConfig, envVarsSchema)
@@ -35,6 +36,10 @@ export class ConfigService {
     return String(this.envConfig.NODE_ENV)
   }
 
+  get prismaServer(): string {
+    return String(this.envConfig.PRISMA_SERVER)
+  }
+
   get foxCmsSecret(): string {
     return String(this.envConfig.FOXCMS_SECRET)
   }
@@ -45,5 +50,9 @@ export class ConfigService {
 
   get uploadDir(): string {
     return String(this.envConfig.UPLOAD_DIR)
+  }
+
+  get testUser(): string {
+    return String(this.envConfig.TEST_USER)
   }
 }

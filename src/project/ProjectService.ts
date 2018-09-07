@@ -7,6 +7,7 @@ import { Prisma, Project, User } from '../typings/prisma'
 import Datamodel from '../prisma/Datamodel'
 import PrismaServer from '../prisma/PrismaServer'
 import { ContentTypeFieldType } from '../content-type/ContentTypeFieldType'
+import { ConfigService } from '../config/ConfigService'
 
 @Injectable()
 export class ProjectService {
@@ -14,6 +15,7 @@ export class ProjectService {
     @Inject('PrismaBinding') private readonly prismaBinding: Prisma,
     private prismaServer: PrismaServer,
     private contentTypeService: ContentTypeService,
+    private readonly configService: ConfigService,
   ) {}
 
   async buildProject(
@@ -69,7 +71,7 @@ export class ProjectService {
   generateProjectToken(project: Project, temporary: boolean = true) {
     return jwt.sign(
       { project: project.providedName, stage: project.stage },
-      process.env.FOXCMS_SECRET + project.generatedName,
+      this.configService.foxCmsSecret + project.generatedName,
       { expiresIn: temporary ? '1h' : '1y' },
     )
   }
